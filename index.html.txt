@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Який продукт принесе тобі перші $5,000?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Палітра кольорів */
+            --bg-color: #F7F5F0;
+            --accent-gold: #D4A017;
+            --accent-gold-light: rgba(212, 160, 23, 0.1);
+            --text-dark: #1A1A2E;
+            --text-muted: #5A5A6E;
+            --cta-bg: #1B2B6B;
+            --cta-text: #FFFFFF;
+            --card-bg: #FFFFFF;
+            
+            /* Типографіка */
+            --font-headings: 'Playfair Display', serif;
+            --font-body: 'Inter', sans-serif;
+            
+            /* Анімації */
+            --transition-smooth: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        /* ТЕМНА ТЕМА */
+        body.dark-theme {
+            --bg-color: #0F0F13;
+            --text-dark: #F7F5F0;
+            --text-muted: #9E9EA8;
+            --card-bg: #18181E;
+            --cta-bg: #0A1128;
+            --accent-gold-light: rgba(212, 160, 23, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Адаптивні відступи: зверху більше місця, щоб кнопки теми не перекривали контент на телефоні */
+            padding: clamp(90px, 12vh, 120px) clamp(15px, 4vw, 40px) clamp(30px, 6vh, 60px);
+            line-height: 1.6;
+            transition: background-color 0.6s ease, color 0.6s ease;
+        }
+
+        /* Контейнер квизу */
+        .quiz-container {
+            width: 100%;
+            max-width: 680px; /* Трохи ширше для ПК */
+            margin: 0 auto;
+        }
+
+        /* Екрани */
+        .screen {
+            display: none;
+            width: 100%;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        /* Анімація появи */
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1, h2, h3 {
+            font-family: var(--font-headings);
+            color: var(--text-dark);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        /* Выделение золотым текстом */
+        .gold-text {
+            color: var(--accent-gold);
+        }
+
+        /* --- ІНТРО ЕКРАН --- */
+        .intro-wrapper {
+            text-align: center;
+            background: var(--card-bg);
+            padding: clamp(2rem, 6vw, 4rem);
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.6s ease, box-shadow 0.6s ease;
+        }
+
+        /* Вибір теми */
+        .theme-selector {
+            position: fixed;
+            top: clamp(15px, 3vw, 30px);
+            right: clamp(15px, 3vw, 30px);
+            display: flex;
+            flex-direction: column; /* Зробив кнопки вертикальними */
+            align-items: center;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 14px 10px; /* Змінив відступи для вертикальної капсули */
+            border-radius: 100px;
+            gap: 14px; /* Акуратна відстань між кнопками */
+            border: 1px solid rgba(128, 128, 128, 0.15);
+            transition: background-color 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease;
+            z-index: 100;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        body.dark-theme .theme-selector {
+            background: rgba(24, 24, 30, 0.75);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .theme-label {
+            display: none; /* Прибираємо текст для більш мінімалістичного вигляду */
+        }
+
+        .theme-btn {
+            width: 38px; /* Збільшений розмір для зручності на телефоні (було 24px) */
+            height: 38px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .theme-btn.light {
+            background-color: #F7F5F0;
+            box-shadow: inset 0 0 0 1px #d1cdb8;
+        }
+
+        .theme-btn.dark {
+            background-color: #0F0F13;
+            box-shadow: inset 0 0 0 1px #333;
+        }
+
+        .theme-btn.active {
+            border-color: var(--accent-gold);
+            transform: scale(1.15);
+            box-shadow: 0 0 15px var(--accent-gold-light);
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-gold);
+            background-color: var(--accent-gold-light);
+            border: 1px solid rgba(212, 160, 23, 0.3);
+            padding: 0.4rem 1rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .intro-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 1rem;
+        }
+
+        .intro-desc {
+            color: var(--text-muted);
+            font-size: clamp(1rem, 3vw, 1.125rem);
+            margin-bottom: 2.5rem;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Кнопки */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--accent-gold);
+            color: #fff;
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: clamp(1rem, 3vw, 1.15rem);
+            padding: clamp(1rem, 3vw, 1.2rem) clamp(2rem, 6vw, 3.5rem);
+            border: none;
+            border-radius: 100px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 15px rgba(212, 160, 23, 0.3);
+            width: 100%; /* Розтягується на телефоні */
+            max-width: 380px; /* Зберігає акуратний розмір на ПК */
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 160, 23, 0.4);
+        }
+
+        /* --- ЕКРАН КВИЗУ --- */
+        .progress-container {
+            margin-bottom: 2rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.8rem;
+        }
+
+        .progress-bar-bg {
+            height: 5px;
+            background-color: #EAE6DB;
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--accent-gold);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 100px;
+        }
+
+        .question-title {
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            margin-bottom: 2rem;
+            text-align: left;
+            transition: color 0.6s ease;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .option-card {
+            display: flex;
+            align-items: center;
+            background: var(--card-bg);
+            border: 2px solid transparent;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            border-radius: 16px;
+            padding: clamp(1rem, 4vw, 1.5rem); /* Адаптивні відступи для зручності на тачскрінах */
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            opacity: 0;
+            transform: translateY(15px);
+            animation: slideUpFade 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes slideUpFade {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body.dark-theme .option-card {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .option-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(212, 160, 23, 0.15);
+        }
+
+        .option-card.selected {
+            border-color: var(--accent-gold);
+            background-color: var(--accent-gold-light);
+            transform: scale(0.98);
+        }
+
+        .option-marker {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-right: 1.2rem;
+            transition: var(--transition-smooth);
+        }
+
+        .option-card:hover .option-marker,
+        .option-card.selected .option-marker {
+            background-color: var(--accent-gold);
+            color: #fff;
+        }
+
+        .option-text {
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        /* --- ЕКРАН РЕЗУЛЬТАТУ --- */
+        .result-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: clamp(2rem, 6vw, 3rem);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            transition: background-color 0.6s ease, box-shadow 0.6s ease;
+        }
+
+        .result-emoji {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            line-height: 1;
+        }
+
+        .result-title {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            margin-bottom: 0.5rem;
+            color: var(--accent-gold);
+        }
+
+        .result-subtitle {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-desc {
+            color: var(--text-muted);
+            text-align: left;
+            margin-bottom: 1rem;
+        }
+
+        /* Акцентна CTA карточка */
+        .cta-card {
+            background-color: var(--cta-bg);
+            color: var(--cta-text);
+            border-radius: 24px;
+            padding: clamp(2rem, 6vw, 3rem);
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(27, 43, 107, 0.2);
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-title {
+            font-family: var(--font-headings);
+            color: #fff;
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            margin-bottom: 1rem;
+        }
+
+        .cta-desc {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        .btn-restart {
+            display: block;
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            padding: 1rem;
+            transition: color 0.3s;
+            text-decoration: underline;
+        }
+
+        .btn-restart:hover {
+            color: var(--text-dark);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Преміальний перемикач теми у правому верхньому куті -->
+    <div class="theme-selector">
+        <button class="theme-btn light active" onclick="setTheme('light')" aria-label="Світла тема" title="Світла тема"></button>
+        <button class="theme-btn dark" onclick="setTheme('dark')" aria-label="Темна тема" title="Темна тема"></button>
+    </div>
+
+    <main class="quiz-container">
+        
+        <!-- ІНТРО ЕКРАН -->
+        <section id="intro-screen" class="screen active">
+            <div class="intro-wrapper">
+                <div class="badge">⚡ тест · 2 хвилини</div>
+                <h1 class="intro-title">Який продукт принесе тобі перші <span class="gold-text">$5,000?</span></h1>
+                <p class="intro-desc">Дай відповідь на 5 коротких питань, щоб дізнатися, який формат роботи найкраще розкриє твою експертність та дозволить швидко вийти на стабільний дохід.</p>
+                <button class="btn-primary" onclick="startQuiz()">Пройти тест</button>
+            </div>
+        </section>
+
+        <!-- ЕКРАН КВИЗУ -->
+        <section id="quiz-screen" class="screen">
+            <div class="progress-container">
+                <div class="progress-header">
+                    <span id="progress-text">Питання 1 з 5</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progress-bar"></div>
+                </div>
+            </div>
+            
+            <!-- ДОДАНО КОНТЕЙНЕР ДЛЯ ПРЕМІУМ АНІМАЦІЇ -->
+            <div id="quiz-anim-wrapper" style="opacity: 1; transform: translateY(0); transform-origin: top center;">
+                <h2 class="question-title" id="question-text">Текст питання</h2>
+                
+                <div class="options-list" id="options-container">
+                    <!-- Варіанти відповідей генеруються через JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ЕКРАН РЕЗУЛЬТАТУ -->
+        <section id="result-screen" class="screen">
+            <div class="result-card">
+                <div class="badge">Твій ідеальний формат</div>
+                <div class="result-emoji" id="result-emoji">🏆</div>
+                <h2 class="result-title" id="result-title">Назва продукту</h2>
+                <div class="result-desc" id="result-desc-1">Опис абзац 1</div>
+                <div class="result-desc" id="result-desc-2">Опис абзац 2</div>
+            </div>
+
+            <div class="cta-card">
+                <h3 class="cta-title" id="cta-title">Готовий створити цей продукт?</h3>
+                <p class="cta-desc" id="cta-desc">Приєднуйся до практикуму, де ми за 3 тижні запакуємо твій досвід та зробимо перші продажі.</p>
+                
+                <!-- 👇👇👇 ВСТАВТЕ ВАШЕ ПОСИЛАННЯ НА ТЕЛЕГРАМ-КАНАЛ У АТРИБУТ href 👇👇👇 -->
+                <a href="ВСТАВТЕ_СВОЄ_ПОСИЛАННЯ_ТУТ" target="_blank" rel="noopener noreferrer" class="btn-primary" style="background-color: #fff; color: var(--cta-bg);" id="cta-btn">Зайняти місце на практикумі</a>
+            </div>
+
+            <button class="btn-restart" onclick="resetQuiz()">Пройти тест ще раз</button>
+        </section>
+
+    </main>
+
+    <script>
+        // База даних питань та зважених балів
+        const questions = [
+            {
+                text: "Яка твоя ситуація зараз?",
+                options: [
+                    { text: "Тільки починаю — блог дуже маленький, але є знання і досвід у своїй темі і бажання заробляти онлайн", weights: { consultation: 2, mentorship: 1 } },
+                    { text: "Є невеликий блог, але ще нічого не продавала", weights: { consultation: 2, course: 1 } },
+                    { text: "Вже є підписники і пробувала робити перші продажі — хочу систему", weights: { group: 2, course: 2 } },
+                    { text: "Вже продаю, але хочу масштабуватися і заробляти більше", weights: { course: 3, group: 1 } }
+                ]
+            },
+            {
+                text: "Що тебе зараз найбільше стримує?",
+                options: [
+                    { text: "Не знаю з чого почати", weights: { consultation: 2, mentorship: 1 } },
+                    { text: "Боюся що не куплять", weights: { consultation: 2, course: 1 } },
+                    { text: "Здається що аудиторія ще замала", weights: { mentorship: 2, consultation: 1 } },
+                    { text: "Не розумію який продукт запускати", weights: { course: 2, group: 1 } }
+                ]
+            },
+            {
+                text: "Скільки у тебе вільного часу на роботу з клієнтами?",
+                options: [
+                    { text: "Небагато — максимум 2–3 години на день", weights: { course: 3, consultation: 1 } },
+                    { text: "Достатньо — можу виділити половину дня", weights: { consultation: 3, group: 1 } },
+                    { text: "Багато — готова працювати повний день", weights: { mentorship: 3, group: 2 } }
+                ]
+            },
+            {
+                text: "Що тобі ближче?",
+                options: [
+                    { text: "Допомагати одній людині більш залучено і детально", weights: { mentorship: 3 } },
+                    { text: "Збирати групу і працювати з багатьма одночасно", weights: { group: 3 } },
+                    { text: "Зробити міні-продукт, який купують за невелику суму без моєї участі і він працює на мене 24/7", weights: { course: 3 } }
+                ]
+            },
+            {
+                text: "Що для тебе важливіше на старті?",
+                options: [
+                    { text: "Беру 2–3 клієнти на місяць на комплексну роботу — люблю прям повністю бути залученою в процес", weights: { mentorship: 3 } },
+                    { text: "У мене 4–10 консультацій щотижня — кожна приносить гроші і задоволення", weights: { consultation: 3 } },
+                    { text: "Моя група учнів — як моя улюблена спільнота, з якою я працюю щотижня 1–2 місяці", weights: { group: 3 } }
+                ]
+            }
+        ];
+
+        // Дані результатів для кожної категорії
+        const results = {
+            mentorship: {
+                emoji: "🤝",
+                title: "Менторство 1:1",
+                desc1: "Ти з головою занурюєшся в роботу з людиною і хочеш бачити справжню зміну. Менторство — твій формат, бо дає великий чек з одного клієнта, не потребує великої аудиторії і приносить тобі задоволення.",
+                desc2: "Навіть з маленьким блогом в перший місяць з 2–3 клієнтами ти можеш вийти на гарний дохід.",
+                ctaTitle: "На практикумі 1–2 липня ми побудуємо систему де гроші та нові підписники приходять щодня",
+                ctaDesc: "Розберемо як залучати клієнтів на менторство навіть з маленьким блогом — і запустимо твій перший продукт вже наступного тижня.",
+                btnText: "Перейти в канал практикуму"
+            },
+            consultation: {
+                emoji: "⚡",
+                title: "Пак консультацій",
+                desc1: "Ти цінуєш свій час і ефективність. Консультації — ідеальний старт, бо це найшвидший шлях до перших грошей.",
+                desc2: "Не потрібен великий блог, складний продукт чи довга підготовка. Оголосила — взяла клієнта — отримала оплату.",
+                ctaTitle: "На практикумі 1–2 липня ми побудуємо систему де гроші та нові клієнти приходять щодня",
+                ctaDesc: "Розберемо як правильно презентувати свої консультації, щоб продажі були системні — навіть якщо зараз у тебе маленька аудиторія.",
+                btnText: "Перейти в канал практикуму"
+            },
+            group: {
+                emoji: "👥",
+                title: "Групова програма",
+                desc1: "Тебе заряджає коли люди ростуть разом і коли ти бачиш їх трансформації завдяки твоїм знанням. Групова програма — твій формат.",
+                desc2: "Живі ефіри або зідзвони і спільнота яка підтримує одна одну. Під цей формат не обов'язково потрібно записувати уроки — все можна пояснювати на зідзвонах.",
+                ctaTitle: "На практикумі 1–2 липня ми побудуємо систему де гроші та нові клієнти приходять щодня",
+                ctaDesc: "Розберемо як зібрати свою першу групу навіть якщо зараз у тебе маленький блог — і запустимо твій перший продукт вже наступного тижня.",
+                btnText: "Перейти в канал практикуму"
+            },
+            course: {
+                emoji: "🎓",
+                title: "Міні-курс, інтенсив, практикум або марафон",
+                desc1: "Ти хочеш допомагати багатьом, але не пояснювати одне й те саме кожному особисто. Міні-курс — твій формат. Записала один раз — продається за невелику суму без твоєї постійної участі 24/7.",
+                desc2: "Це дозволить тобі створити базу лояльних клієнтів і стабільний дохід, звільнивши час для себе.",
+                ctaTitle: "На практикумі 1–2 липня ми побудуємо систему де гроші та нові клієнти приходять щодня",
+                ctaDesc: "Розберемо як щодня продавати свій перший продукт по 10–30$, навіть якщо в твоєму блозі зараз менше 500 підписників.",
+                btnText: "Перейти в канал практикуму"
+            }
+        };
+
+        // Стан квизу
+        let currentQuestionIndex = 0;
+        let scores = {
+            mentorship: 0,
+            group: 0,
+            consultation: 0,
+            course: 0
+        };
+
+        const markers = ['А', 'Б', 'В', 'Г'];
+
+        // DOM Елементи
+        const screens = document.querySelectorAll('.screen');
+        const progressText = document.getElementById('progress-text');
+        const progressPercent = document.getElementById('progress-percent');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+
+        // Функція перемикання екранів
+        function switchScreen(screenId) {
+            screens.forEach(s => {
+                s.classList.remove('active');
+            });
+            
+            // Невелика затримка для плавного перезапуску анімації
+            setTimeout(() => {
+                document.getElementById(screenId).classList.add('active');
+            }, 50);
+        }
+
+        // Старт квизу
+        function startQuiz() {
+            switchScreen('quiz-screen');
+            renderQuestion();
+        }
+
+        // Рендер поточного питання
+        function renderQuestion() {
+            const q = questions[currentQuestionIndex];
+            
+            // Оновлення прогресу
+            const percent = ((currentQuestionIndex) / questions.length) * 100;
+            progressText.innerText = `Питання ${currentQuestionIndex + 1} з ${questions.length}`;
+            progressPercent.innerText = `${Math.round(percent)}%`;
+            progressBar.style.width = `${percent}%`;
+
+            // Текст питання
+            questionText.innerText = q.text;
+
+            // Очищення попередніх варіантів
+            optionsContainer.innerHTML = '';
+
+            // Створення варіантів
+            q.options.forEach((opt, index) => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                // Плавна затримка появи (каскадна анімація)
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.onclick = () => handleOptionClick(card, opt.weights);
+
+                const marker = document.createElement('div');
+                marker.className = 'option-marker';
+                marker.innerText = markers[index];
+
+                const text = document.createElement('div');
+                text.className = 'option-text';
+                text.innerText = opt.text;
+
+                card.appendChild(marker);
+                card.appendChild(text);
+                optionsContainer.appendChild(card);
+            });
+        }
+
+        // Обробка кліку на варіант
+        function handleOptionClick(cardElement, weights) {
+            // Блокуємо кліки по інших варіантах
+            optionsContainer.style.pointerEvents = 'none';
+
+            // Підсвічуємо вибраний
+            cardElement.classList.add('selected');
+
+            // Додаємо бали
+            for (const category in weights) {
+                scores[category] += weights[category];
+            }
+
+            const isLastQuestion = currentQuestionIndex === questions.length - 1;
+
+            // ПРЕМІУМ ПЕРЕХІД
+            setTimeout(() => {
+                const quizContent = document.getElementById('quiz-anim-wrapper');
+                
+                // Якщо це останнє питання, показуємо 100% на прогрес-барі перед зникненням
+                if (isLastQuestion) {
+                    progressBar.style.width = '100%';
+                    progressPercent.innerText = '100%';
+                }
+                
+                // 1. Плавне зникнення (віддаляється і йде вгору)
+                quizContent.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                quizContent.style.opacity = '0';
+                quizContent.style.transform = 'translateY(-15px) scale(0.98)';
+                
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    
+                    if (currentQuestionIndex < questions.length) {
+                        renderQuestion();
+                        
+                        // 2. Підготовка до появи нового питання (зміщуємо вниз)
+                        quizContent.style.transition = 'none'; 
+                        quizContent.style.transform = 'translateY(20px) scale(0.98)';
+                        
+                        // Форсуємо перемальовку (reflow), щоб браузер застосував позицію до початку анімації
+                        void quizContent.offsetWidth;
+                        
+                        // 3. М'яка поява нового питання
+                        quizContent.style.transition = 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                        quizContent.style.opacity = '1';
+                        quizContent.style.transform = 'translateY(0) scale(1)';
+                        
+                        optionsContainer.style.pointerEvents = 'auto';
+                    } else {
+                        // Відразу переходимо до результату без зайвих затримок і "блимань" старого екрану
+                        showResult();
+                    }
+                }, 400); // Час на зникнення старого питання
+            }, 450); // Пауза, щоб користувач насолодився підсвіткою свого вибору
+        }
+
+        // Підрахунок і показ результату
+        function showResult() {
+            // Знаходимо категорію з максимальним балом
+            let maxScore = -Infinity;
+            let winningCategory = '';
+
+            for (const category in scores) {
+                if (scores[category] > maxScore) {
+                    maxScore = scores[category];
+                    winningCategory = category;
+                }
+            }
+
+            const res = results[winningCategory];
+
+            // Заповнюємо DOM результатами
+            document.getElementById('result-emoji').innerText = res.emoji;
+            document.getElementById('result-title').innerText = res.title;
+            document.getElementById('result-desc-1').innerText = res.desc1;
+            document.getElementById('result-desc-2').innerText = res.desc2;
+            document.getElementById('cta-title').innerText = res.ctaTitle;
+            document.getElementById('cta-desc').innerText = res.ctaDesc;
+            document.getElementById('cta-btn').innerText = res.btnText;
+
+            // Відразу перемикаємо екран, адже старе питання вже плавно зникло
+            switchScreen('result-screen');
+        }
+
+        // Скидання квизу
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            scores = { mentorship: 0, group: 0, consultation: 0, course: 0 };
+            progressBar.style.width = '0%';
+            
+            // ВАЖЛИВО: Відновлюємо клікабельність варіантів та початковий стан анімації
+            optionsContainer.style.pointerEvents = 'auto';
+            const quizContent = document.getElementById('quiz-anim-wrapper');
+            if (quizContent) {
+                quizContent.style.opacity = '1';
+                quizContent.style.transform = 'none';
+                quizContent.style.transition = 'none';
+            }
+            
+            switchScreen('intro-screen');
+        }
+
+        // Керування темою (Світла/Темна)
+        function setTheme(theme) {
+            const body = document.body;
+            const btnLight = document.querySelector('.theme-btn.light');
+            const btnDark = document.querySelector('.theme-btn.dark');
+
+            if (theme === 'dark') {
+                body.classList.add('dark-theme');
+                btnDark.classList.add('active');
+                btnLight.classList.remove('active');
+            } else {
+                body.classList.remove('dark-theme');
+                btnLight.classList.add('active');
+                btnDark.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
