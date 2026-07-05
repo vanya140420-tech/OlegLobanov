@@ -454,9 +454,6 @@
             <div class="cta-card">
                 <h3 class="cta-title" id="cta-title">Готовий створити цей продукт?</h3>
                 <p class="cta-desc" id="cta-desc">Приєднуйся до практикуму, де ми за 3 тижні запакуємо твій досвід та зробимо перші продажі.</p>
-                
-                <!-- 👇👇👇 ВСТАВТЕ ВАШЕ ПОСИЛАННЯ НА ТЕЛЕГРАМ-КАНАЛ У АТРИБУТ href 👇👇👇 -->
-                <a href="https://t.me/+TtZKhtzj8_k5MmRi" target="_blank" rel="noopener noreferrer" class="btn-primary" style="background-color: #fff; color: var(--cta-bg);" id="cta-btn">Зайняти місце на практикумі</a>
             </div>
 
             <button class="btn-restart" onclick="resetQuiz()">Пройти тест ще раз</button>
@@ -709,8 +706,6 @@
             document.getElementById('result-desc-2').innerText = res.desc2;
             document.getElementById('cta-title').innerText = res.ctaTitle;
             document.getElementById('cta-desc').innerText = res.ctaDesc;
-            document.getElementById('cta-btn').innerText = res.btnText;
-            document.getElementById('cta-btn').href = res.link;
 
             // Відразу перемикаємо екран, адже старе питання вже плавно зникло
             switchScreen('result-screen');
