@@ -243,19 +243,150 @@
 
     </main>
 
-    <!-- Firebase Real-time Synchronization Script -->
+    <!-- MODAL 1: Add/Edit Creative -->
+    <div id="addModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl w-full max-w-lg p-6 m-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button id="closeModalBtn" class="absolute right-4 top-4 text-slate-400 hover:text-white p-1 rounded-lg">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <h2 class="text-lg font-bold dark:text-white text-slate-900 mb-1" id="modalTitle">Добавить креатив</h2>
+            <p class="text-xs text-slate-400 mb-5">Заполните параметры креатива или отредактируйте существующие.</p>
+
+            <form id="addCreativeForm" class="space-y-4 text-xs">
+                <input type="hidden" id="formEditingId" value="">
+
+                <div>
+                    <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Название / Оффер *</label>
+                    <input type="text" required id="formTitle" placeholder="Напр.: 3 ошибки в уходе за кожей" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Направление (Воронка) *</label>
+                        <select id="formFunnel" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="free">🟢 Бесплатное событие</option>
+                            <option value="paid">💳 Платное событие</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Тип медиа *</label>
+                        <select id="formFormat" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="video">📹 Видео (Reels / MP4)</option>
+                            <option value="static">🖼 Изображение / Фото / Баннер</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Ориентация Видео/Фото *</label>
+                        <select id="formOrientation" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="vertical">📱 Вертикальное (9:16)</option>
+                            <option value="horizontal">🖥 Горизонтальное (16:9)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Ниша *</label>
+                        <select id="formCategory" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Inline Quick Add Niche Input -->
+                <div id="quickAddNicheContainer" class="hidden bg-slate-900/90 dark:bg-slate-900/90 bg-slate-200 p-3 rounded-xl border border-blue-500/40 space-y-2">
+                    <label class="block text-[11px] font-semibold text-blue-400">Название новой ниши:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="quickNicheInput" placeholder="Напр.: Инвестиции" class="flex-1 bg-slate-950 dark:bg-slate-950 bg-white border border-slate-700 dark:border-slate-700 border-slate-300 rounded-lg px-3 py-1.5 dark:text-slate-100 text-slate-900 focus:outline-none">
+                        <button type="button" id="quickNicheSaveBtn" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500">Сохранить</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Ссылка на медиафайл (Видео / Фото)</label>
+                    <input type="url" id="formMediaUrl" placeholder="https://... (ссылка на MP4 или картинку)" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Ссылка на обложку (Poster/Превью для видео)</label>
+                    <input type="url" id="formPosterUrl" placeholder="https://... (ссылка на картинку-превью)" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Полная транскрибация текста *</label>
+                    <textarea id="formTranscription" rows="4" required placeholder="Введите текст с креатива или полную расшифровку речи..." class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" id="cancelModalBtn" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800">Отмена</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/20">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Manage Dynamic Niches -->
+    <div id="nicheModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl w-full max-w-md p-6 m-4 shadow-2xl relative">
+            <button id="closeNicheModalBtn" class="absolute right-4 top-4 text-slate-400 hover:text-white p-1 rounded-lg">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <h2 class="text-lg font-bold dark:text-white text-slate-900 mb-1">Управление Нишами</h2>
+            <p class="text-xs text-slate-400 mb-4">Добавляйте новые или удаляйте неиспользуемые категории.</p>
+
+            <div class="space-y-4 text-xs">
+                <div class="flex gap-2">
+                    <input type="text" id="newNicheInput" placeholder="Новая ниша (напр. Недвижимость)" class="flex-1 bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="saveNewNicheBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl">
+                        Добавить
+                    </button>
+                </div>
+
+                <div class="border-t border-slate-800 dark:border-slate-800 border-slate-200 pt-3">
+                    <label class="block text-slate-400 font-medium mb-2">Существующие ниши:</label>
+                    <div id="nicheList" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl w-full max-w-sm p-6 m-4 shadow-2xl relative text-center">
+            <div class="w-12 h-12 bg-rose-500/10 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-base font-bold dark:text-white text-slate-900 mb-1">Удалить креатив?</h3>
+            <p class="text-xs text-slate-400 mb-6">Это действие нельзя будет отменить. Креатив будет полностью удален.</p>
+            
+            <div class="flex gap-3 justify-center text-xs">
+                <button id="cancelDeleteBtn" class="flex-1 py-2.5 rounded-xl border border-slate-700 dark:border-slate-700 border-slate-300 dark:text-slate-300 text-slate-700 hover:bg-slate-800 dark:hover:bg-slate-800 hover:bg-slate-100 font-medium">
+                    Отмена
+                </button>
+                <button id="confirmDeleteBtn" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold shadow-lg shadow-rose-600/20">
+                    Удалить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2.5 px-4 py-3 bg-slate-900 dark:bg-slate-900 bg-white text-slate-100 dark:text-slate-100 text-slate-900 border border-slate-700 rounded-xl shadow-xl text-xs font-medium">
+        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+        <span id="toastMsg">Успешно!</span>
+    </div>
+
+    <!-- Unified Single Script (No Module Conflicts) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'creatives-db-shared-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-
-        let db = null;
-        let auth = null;
-        let isCloudEnabled = false;
-
+        // Global State Defaults
         const defaultCategories = [
             'Beauty & Уход',
             'Экспертные блоги',
@@ -315,240 +446,132 @@
             }
         ];
 
-        // Read Local Data First so user never loses data regardless of device or network status
-        let localSavedCategories = null;
-        let localSavedCreatives = null;
+        // Safe Storage Recovery
+        let savedCats = null;
+        let savedCreats = null;
         try {
-            localSavedCategories = JSON.parse(localStorage.getItem('analytics_categories'));
-            localSavedCreatives = JSON.parse(localStorage.getItem('analytics_creatives'));
-        } catch (e) {
-            console.warn("Storage error fallback", e);
-        }
+            savedCats = JSON.parse(localStorage.getItem('analytics_categories'));
+            savedCreats = JSON.parse(localStorage.getItem('analytics_creatives'));
+        } catch(e) {}
 
-        window.categories = localSavedCategories && localSavedCategories.length > 0 ? localSavedCategories : defaultCategories;
-        window.creatives = localSavedCreatives && localSavedCreatives.length > 0 ? localSavedCreatives : initialCreatives;
-        
-        window.currentView = 'library'; 
-        window.activeFunnel = 'all';    
-        window.activeCategory = 'all';  
+        window.categories = (savedCats && Array.isArray(savedCats) && savedCats.length > 0) ? savedCats : defaultCategories;
+        window.creatives = (savedCreats && Array.isArray(savedCreats) && savedCreats.length > 0) ? savedCreats : initialCreatives;
+
+        window.currentView = 'library';
+        window.activeFunnel = 'all';
+        window.activeCategory = 'all';
         window.searchQuery = '';
         window.creativeToDeleteId = null;
 
-        // Initialize Cloud Sync with Instant Local Fallback
-        async function initCloud() {
-            // Render local data immediately so app opens instantly on any device
-            if (window.renderApp) window.renderApp();
+        // Cloud Storage Setup
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'creatives-db-shared-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        let db = null;
+        let isCloud = false;
 
-            if (!firebaseConfig) {
-                console.log("Локальный режим автономного доступа (без внешних зависимостей).");
-                return;
-            }
-
-            try {
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                isCloudEnabled = true;
-                const statusEl = document.getElementById('syncStatus');
-                if (statusEl) statusEl.classList.remove('hidden');
-
-                const cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
-
-                // Real-Time listener syncs data across all devices opening the link
-                onSnapshot(cloudDocRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        const data = snapshot.data();
-                        
-                        if (data.categories && Array.isArray(data.categories)) {
-                            const mergedCats = Array.from(new Set([...window.categories, ...data.categories]));
-                            window.categories = mergedCats;
-                        }
-
-                        if (data.creatives && Array.isArray(data.creatives)) {
-                            const map = new Map();
-                            // Keep cloud items or local items priority seamlessly
-                            data.creatives.forEach(item => map.set(item.id, item));
-                            window.creatives.forEach(item => {
-                                if (!map.has(item.id)) map.set(item.id, item);
-                            });
-                            window.creatives = Array.from(map.values());
-                        }
-
-                        window.saveLocalOnly();
-                    } else {
-                        window.syncToCloud();
-                    }
-                    if (window.renderApp) window.renderApp();
-                }, (error) => {
-                    console.error("Cloud snapshot error:", error);
-                    if (window.renderApp) window.renderApp();
-                });
-
-            } catch (err) {
-                console.warn("Cloud connection fallback, local state active:", err);
-                if (window.renderApp) window.renderApp();
-            }
-        }
-
-        window.syncToCloud = async function() {
-            if (!isCloudEnabled || !db) return;
-            try {
-                const cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
-                await setDoc(cloudDocRef, {
-                    categories: window.categories,
-                    creatives: window.creatives,
-                    updatedAt: Date.now()
-                });
-            } catch (err) {
-                console.error("Cloud save error:", err);
-            }
-        };
-
-        window.saveLocalOnly = function() {
+        function saveLocal() {
             try {
                 localStorage.setItem('analytics_categories', JSON.stringify(window.categories));
                 localStorage.setItem('analytics_creatives', JSON.stringify(window.creatives));
-            } catch (e) {
-                console.warn("localStorage write failed:", e);
+            } catch(e) {}
+        }
+
+        window.saveData = async function() {
+            saveLocal();
+            if (isCloud && db) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
+                    await setDoc(docRef, {
+                        categories: window.categories,
+                        creatives: window.creatives,
+                        updatedAt: Date.now()
+                    });
+                } catch(e) {
+                    console.warn("Cloud save error:", e);
+                }
             }
         };
 
-        window.saveData = function() {
-            window.saveLocalOnly();
-            window.syncToCloud();
-        };
-
-        initCloud();
-    </script>
-
-    <!-- Main Logic Script -->
-    <script>
-        // UI Elements
-        let librarySection, analyticsSection, viewLibraryBtn, viewAnalyticsBtn, creativesGrid, emptyState, searchInput, clearSearchBtn, nichePillContainer, funnelTabs, resultsCount;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            librarySection = document.getElementById('librarySection');
-            analyticsSection = document.getElementById('analyticsSection');
-            viewLibraryBtn = document.getElementById('viewLibraryBtn');
-            viewAnalyticsBtn = document.getElementById('viewAnalyticsBtn');
-            creativesGrid = document.getElementById('creativesGrid');
-            emptyState = document.getElementById('emptyState');
-            searchInput = document.getElementById('searchInput');
-            clearSearchBtn = document.getElementById('clearSearchBtn');
-            nichePillContainer = document.getElementById('nichePillContainer');
-            funnelTabs = document.getElementById('funnelTabs');
-            resultsCount = document.getElementById('resultsCount');
-
-            setupEventListeners();
-            renderApp();
-        });
-
+        // Render Functions
         window.renderApp = function() {
             renderCategoryPills();
             populateFormCategories();
             renderCreatives();
             updateCounts();
-            if (currentView === 'analytics') {
-                renderAnalytics();
-            }
-            lucide.createIcons();
+            if (window.currentView === 'analytics') renderAnalytics();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
-        function setView(view) {
-            currentView = view;
-            if (view === 'library') {
-                librarySection.classList.remove('hidden');
-                analyticsSection.classList.add('hidden');
-                viewLibraryBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 bg-blue-600 text-white transition-all shadow";
-                viewAnalyticsBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 dark:text-slate-400 text-slate-700 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 transition-all";
-            } else {
-                librarySection.classList.add('hidden');
-                analyticsSection.classList.remove('hidden');
-                viewAnalyticsBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 bg-blue-600 text-white transition-all shadow";
-                viewLibraryBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 dark:text-slate-400 text-slate-700 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 transition-all";
-                renderAnalytics();
-            }
-        }
-
         function renderCategoryPills() {
-            if (!nichePillContainer) return;
+            const container = document.getElementById('nichePillContainer');
+            if (!container) return;
             let html = `
-                <button data-cat="all" class="niche-pill px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all border ${activeCategory === 'all' ? 'bg-blue-600/20 text-blue-500 border-blue-500/40 font-semibold' : 'bg-slate-900/60 dark:bg-slate-900/60 bg-white text-slate-400 dark:text-slate-400 text-slate-700 border-slate-800 dark:border-slate-800 border-slate-300 hover:border-slate-500'}">
+                <button data-cat="all" class="niche-pill px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all border ${window.activeCategory === 'all' ? 'bg-blue-600/20 text-blue-500 border-blue-500/40 font-semibold' : 'bg-slate-900/60 dark:bg-slate-900/60 bg-white text-slate-400 dark:text-slate-400 text-slate-700 border-slate-800 dark:border-slate-800 border-slate-300 hover:border-slate-500'}">
                     Все ниши
                 </button>
             `;
-
-            categories.forEach(cat => {
-                const isActive = activeCategory === cat;
+            window.categories.forEach(cat => {
+                const isActive = window.activeCategory === cat;
                 html += `
-                    <button data-cat="${cat}" class="niche-pill px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all border ${isActive ? 'bg-blue-600/20 text-blue-500 border-blue-500/40 font-semibold' : 'bg-slate-900/60 dark:bg-slate-900/60 bg-white text-slate-400 dark:text-slate-400 text-slate-700 border-slate-800 dark:border-slate-800 border-slate-300 hover:border-slate-500'}">
-                        ${cat}
+                    <button data-cat="${escapeHtml(cat)}" class="niche-pill px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all border ${isActive ? 'bg-blue-600/20 text-blue-500 border-blue-500/40 font-semibold' : 'bg-slate-900/60 dark:bg-slate-900/60 bg-white text-slate-400 dark:text-slate-400 text-slate-700 border-slate-800 dark:border-slate-800 border-slate-300 hover:border-slate-500'}">
+                        ${escapeHtml(cat)}
                     </button>
                 `;
             });
-
-            nichePillContainer.innerHTML = html;
+            container.innerHTML = html;
         }
 
         function populateFormCategories() {
-            const formCategorySelect = document.getElementById('formCategory');
-            if (!formCategorySelect) return;
-            let optionsHtml = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            const select = document.getElementById('formCategory');
+            if (!select) return;
+            let optionsHtml = window.categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
             optionsHtml += `<option value="__NEW_NICHE__" class="text-blue-400 font-semibold">+ Создать новую нишу...</option>`;
-            formCategorySelect.innerHTML = optionsHtml;
+            select.innerHTML = optionsHtml;
         }
 
         function getFilteredCreatives() {
-            return creatives.filter(item => {
-                if (activeFunnel !== 'all' && item.funnel !== activeFunnel) return false;
-                if (activeCategory !== 'all' && item.category !== activeCategory) return false;
-
-                if (searchQuery.trim() !== '') {
-                    const q = searchQuery.toLowerCase();
-                    const inTitle = item.title.toLowerCase().includes(q);
-                    const inTrans = item.transcription.toLowerCase().includes(q);
-                    const inCat = item.category.toLowerCase().includes(q);
-                    const inFormat = item.format.toLowerCase().includes(q);
-                    if (!inTitle && !inTrans && !inCat && !inFormat) return false;
+            return window.creatives.filter(item => {
+                if (window.activeFunnel !== 'all' && item.funnel !== window.activeFunnel) return false;
+                if (window.activeCategory !== 'all' && item.category !== window.activeCategory) return false;
+                if (window.searchQuery.trim() !== '') {
+                    const q = window.searchQuery.toLowerCase();
+                    const inTitle = item.title ? item.title.toLowerCase().includes(q) : false;
+                    const inTrans = item.transcription ? item.transcription.toLowerCase().includes(q) : false;
+                    const inCat = item.category ? item.category.toLowerCase().includes(q) : false;
+                    if (!inTitle && !inTrans && !inCat) return false;
                 }
-
                 return true;
             });
         }
 
         function renderCreatives() {
-            if (!creativesGrid) return;
+            const grid = document.getElementById('creativesGrid');
+            const empty = document.getElementById('emptyState');
+            const cnt = document.getElementById('resultsCount');
+            if (!grid) return;
+
             const filtered = getFilteredCreatives();
-            resultsCount.textContent = filtered.length;
+            if (cnt) cnt.textContent = filtered.length;
 
             if (filtered.length === 0) {
-                creativesGrid.innerHTML = '';
-                emptyState.classList.remove('hidden');
+                grid.innerHTML = '';
+                if (empty) empty.classList.remove('hidden');
                 return;
             }
 
-            emptyState.classList.add('hidden');
+            if (empty) empty.classList.add('hidden');
 
-            creativesGrid.innerHTML = filtered.map(item => {
+            grid.innerHTML = filtered.map(item => {
                 const isPaid = item.funnel === 'paid';
                 const isVideo = item.format === 'video';
                 const isVertical = item.orientation === 'vertical';
                 const mediaSrc = item.mediaUrl || (isVideo ? 'https://assets.mixkit.co/videos/preview/mixkit-woman-applying-face-cream-41584-large.mp4' : 'https://placehold.co/600x337/1e293b/94a3b8?text=Превью+Фото');
-                const posterSrc = item.posterUrl || (isVideo ? 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80' : '');
-
+                const posterSrc = item.posterUrl || '';
                 const aspectClass = isVertical ? 'aspect-[9/16] max-h-[480px]' : 'aspect-[16/9]';
 
                 return `
                     <div class="bg-slate-900/60 dark:bg-slate-900/60 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl group shadow-sm">
                         
-                        <!-- Media View -->
                         <div class="relative ${aspectClass} bg-slate-950 border-b border-slate-800 dark:border-slate-800 border-slate-200 overflow-hidden flex items-center justify-center">
                             ${isVideo ? `
                                 <video src="${mediaSrc}" ${posterSrc ? `poster="${posterSrc}"` : ''} controls class="w-full h-full object-cover" preload="metadata"></video>
@@ -556,7 +579,6 @@
                                 <img src="${mediaSrc}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x337/1e293b/94a3b8?text=Изображение'">
                             `}
 
-                            <!-- Badges -->
                             <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none">
                                 <span class="px-2.5 py-1 rounded-lg text-[10px] font-semibold tracking-wide backdrop-blur-md shadow-sm border ${isPaid ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'}">
                                     ${isPaid ? '💳 Платное' : '🟢 Бесплатное'}
@@ -576,7 +598,6 @@
                             ` : ''}
                         </div>
 
-                        <!-- Content Body -->
                         <div class="p-4 flex-1 flex flex-col justify-between space-y-4">
                             <div>
                                 <div class="flex items-center justify-between text-xs mb-1.5">
@@ -596,7 +617,6 @@
                                 </h3>
                             </div>
 
-                            <!-- Transcription Area -->
                             <div class="bg-slate-950 dark:bg-slate-950 bg-slate-100 border border-slate-800 dark:border-slate-800 border-slate-300 rounded-xl p-3 flex flex-col space-y-2">
                                 <div class="flex items-center justify-between border-b border-slate-800 dark:border-slate-800 border-slate-200 pb-2">
                                     <span class="text-[11px] font-medium text-slate-400 dark:text-slate-400 text-slate-600 flex items-center gap-1.5">
@@ -617,17 +637,17 @@
                 `;
             }).join('');
 
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function renderAnalytics() {
-            const total = creatives.length;
-            const freeCount = creatives.filter(c => c.funnel === 'free').length;
-            const paidCount = creatives.filter(c => c.funnel === 'paid').length;
-            const verticalCount = creatives.filter(c => c.orientation === 'vertical').length;
-            const horizontalCount = creatives.filter(c => c.orientation === 'horizontal').length;
-            const staticCount = creatives.filter(c => c.format === 'static').length;
-            const videoCount = creatives.filter(c => c.format === 'video').length;
+            const total = window.creatives.length;
+            const freeCount = window.creatives.filter(c => c.funnel === 'free').length;
+            const paidCount = window.creatives.filter(c => c.funnel === 'paid').length;
+            const verticalCount = window.creatives.filter(c => c.orientation === 'vertical').length;
+            const horizontalCount = window.creatives.filter(c => c.orientation === 'horizontal').length;
+            const staticCount = window.creatives.filter(c => c.format === 'static').length;
+            const videoCount = window.creatives.filter(c => c.format === 'video').length;
 
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statVerticalCount').textContent = verticalCount;
@@ -662,8 +682,8 @@
             `;
 
             const nicheCounts = {};
-            categories.forEach(cat => nicheCounts[cat] = 0);
-            creatives.forEach(c => {
+            window.categories.forEach(cat => nicheCounts[cat] = 0);
+            window.creatives.forEach(c => {
                 if (nicheCounts[c.category] !== undefined) nicheCounts[c.category]++;
                 else nicheCounts[c.category] = 1;
             });
@@ -683,23 +703,23 @@
                 `;
             }).join('');
 
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // Helpers
+        function updateCounts() {
+            document.getElementById('cntAll').textContent = window.creatives.length;
+            document.getElementById('cntFree').textContent = window.creatives.filter(c => c.funnel === 'free').length;
+            document.getElementById('cntPaid').textContent = window.creatives.filter(c => c.funnel === 'paid').length;
+        }
+
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
+
         function escapeJsString(str) {
             if (!str) return '';
             return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
-        }
-
-        function updateCounts() {
-            document.getElementById('cntAll').textContent = creatives.length;
-            document.getElementById('cntFree').textContent = creatives.filter(c => c.funnel === 'free').length;
-            document.getElementById('cntPaid').textContent = creatives.filter(c => c.funnel === 'paid').length;
         }
 
         window.copyText = function(btnEl, text) {
@@ -720,74 +740,49 @@
 
         function showToast(msg) {
             const toast = document.getElementById('toast');
+            if (!toast) return;
             document.getElementById('toastMsg').textContent = msg;
             toast.classList.remove('translate-y-20', 'opacity-0');
             toast.classList.add('translate-y-0', 'opacity-100');
-
             setTimeout(() => {
                 toast.classList.remove('translate-y-0', 'opacity-100');
                 toast.classList.add('translate-y-20', 'opacity-0');
             }, 2500);
         }
 
-        // Editing Existing Creative Logic
         window.editCreative = function(id) {
-            const item = creatives.find(c => c.id === id);
+            const item = window.creatives.find(c => c.id === id);
             if (!item) return;
 
             populateFormCategories();
 
             document.getElementById('modalTitle').textContent = 'Редактировать креатив';
             document.getElementById('formEditingId').value = item.id;
-            document.getElementById('formTitle').value = item.title;
-            document.getElementById('formFunnel').value = item.funnel;
-            document.getElementById('formFormat').value = item.format;
-            document.getElementById('formOrientation').value = item.orientation;
-            document.getElementById('formCategory').value = item.category;
+            document.getElementById('formTitle').value = item.title || '';
+            document.getElementById('formFunnel').value = item.funnel || 'free';
+            document.getElementById('formFormat').value = item.format || 'video';
+            document.getElementById('formOrientation').value = item.orientation || 'vertical';
+            document.getElementById('formCategory').value = item.category || window.categories[0];
             document.getElementById('formMediaUrl').value = item.mediaUrl || '';
             document.getElementById('formPosterUrl').value = item.posterUrl || '';
-            document.getElementById('formTranscription').value = item.transcription;
+            document.getElementById('formTranscription').value = item.transcription || '';
 
             const addModal = document.getElementById('addModal');
             addModal.classList.remove('hidden');
             setTimeout(() => addModal.classList.remove('opacity-0'), 10);
         };
 
-        // Deletion Modal Logic
-        const deleteModal = document.getElementById('deleteModal');
-        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-
         window.promptDeleteCreative = function(id) {
-            creativeToDeleteId = id;
-            deleteModal.classList.remove('hidden');
-            setTimeout(() => deleteModal.classList.remove('opacity-0'), 10);
+            window.creativeToDeleteId = id;
+            const modal = document.getElementById('deleteModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
         };
 
-        function closeDeleteModal() {
-            deleteModal.classList.add('opacity-0');
-            setTimeout(() => {
-                deleteModal.classList.add('hidden');
-                creativeToDeleteId = null;
-            }, 200);
-        }
-
-        cancelDeleteBtn.addEventListener('click', closeDeleteModal);
-
-        confirmDeleteBtn.addEventListener('click', () => {
-            if (creativeToDeleteId) {
-                creatives = creatives.filter(c => c.id !== creativeToDeleteId);
-                saveData();
-                renderCreatives();
-                updateCounts();
-                closeDeleteModal();
-                showToast("Креатив удален");
-            }
-        });
-
         function renderNicheManagementList() {
-            const nicheList = document.getElementById('nicheList');
-            nicheList.innerHTML = categories.map((cat, idx) => `
+            const list = document.getElementById('nicheList');
+            if (!list) return;
+            list.innerHTML = window.categories.map((cat, idx) => `
                 <div class="flex items-center justify-between bg-slate-900 dark:bg-slate-900 bg-slate-100 px-3 py-2 rounded-xl border border-slate-800 dark:border-slate-800 border-slate-300">
                     <span class="dark:text-slate-200 text-slate-800">${escapeHtml(cat)}</span>
                     <button onclick="removeNiche(${idx})" class="text-slate-400 hover:text-rose-500 transition-colors p-1" title="Удалить нишу">
@@ -795,17 +790,17 @@
                     </button>
                 </div>
             `).join('');
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         window.removeNiche = function(index) {
-            if (categories.length <= 1) {
+            if (window.categories.length <= 1) {
                 showToast('Должна остаться хотя бы одна ниша!');
                 return;
             }
-            const removed = categories.splice(index, 1)[0];
-            if (activeCategory === removed) activeCategory = 'all';
-            saveData();
+            const removed = window.categories.splice(index, 1)[0];
+            if (window.activeCategory === removed) window.activeCategory = 'all';
+            window.saveData();
             renderCategoryPills();
             populateFormCategories();
             renderNicheManagementList();
@@ -813,65 +808,37 @@
             showToast(`Ниша "${removed}" удалена`);
         };
 
-        function setupEventListeners() {
-            viewLibraryBtn.addEventListener('click', () => setView('library'));
-            viewAnalyticsBtn.addEventListener('click', () => setView('analytics'));
+        // DOM Ready Bindings
+        document.addEventListener('DOMContentLoaded', () => {
+            const viewLibraryBtn = document.getElementById('viewLibraryBtn');
+            const viewAnalyticsBtn = document.getElementById('viewAnalyticsBtn');
+            const librarySection = document.getElementById('librarySection');
+            const analyticsSection = document.getElementById('analyticsSection');
 
-            const formCategorySelect = document.getElementById('formCategory');
-            const quickAddNicheContainer = document.getElementById('quickAddNicheContainer');
-            const quickNicheInput = document.getElementById('quickNicheInput');
-            const quickNicheSaveBtn = document.getElementById('quickNicheSaveBtn');
-
-            formCategorySelect.addEventListener('change', (e) => {
-                if (e.target.value === '__NEW_NICHE__') {
-                    quickAddNicheContainer.classList.remove('hidden');
-                    quickNicheInput.focus();
-                } else {
-                    quickAddNicheContainer.classList.add('hidden');
-                }
+            viewLibraryBtn.addEventListener('click', () => {
+                window.currentView = 'library';
+                librarySection.classList.remove('hidden');
+                analyticsSection.classList.add('hidden');
+                viewLibraryBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 bg-blue-600 text-white transition-all shadow";
+                viewAnalyticsBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 dark:text-slate-400 text-slate-700 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 transition-all";
             });
 
-            quickNicheSaveBtn.addEventListener('click', () => {
-                const val = quickNicheInput.value.trim();
-                if (!val) return;
-                if (!categories.includes(val)) {
-                    categories.push(val);
-                    saveData();
-                    renderCategoryPills();
-                    populateFormCategories();
-                    formCategorySelect.value = val;
-                    showToast(`Ниша "${val}" создана!`);
-                } else {
-                    formCategorySelect.value = val;
-                }
-                quickNicheInput.value = '';
-                quickAddNicheContainer.classList.add('hidden');
+            viewAnalyticsBtn.addEventListener('click', () => {
+                window.currentView = 'analytics';
+                librarySection.classList.add('hidden');
+                analyticsSection.classList.remove('hidden');
+                viewAnalyticsBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 bg-blue-600 text-white transition-all shadow";
+                viewLibraryBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 dark:text-slate-400 text-slate-700 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 transition-all";
+                renderAnalytics();
             });
 
-            searchInput.addEventListener('input', (e) => {
-                searchQuery = e.target.value;
-                if (searchQuery.length > 0) {
-                    clearSearchBtn.classList.remove('hidden');
-                } else {
-                    clearSearchBtn.classList.add('hidden');
-                }
-                renderCreatives();
-            });
-
-            clearSearchBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                searchQuery = '';
-                clearSearchBtn.classList.add('hidden');
-                renderCreatives();
-            });
-
+            // Funnel Tabs
+            const funnelTabs = document.getElementById('funnelTabs');
             funnelTabs.addEventListener('click', (e) => {
                 const btn = e.target.closest('.tab-btn');
                 if (!btn) return;
-
                 const funnel = btn.dataset.funnel;
-                activeFunnel = funnel;
-
+                window.activeFunnel = funnel;
                 funnelTabs.querySelectorAll('.tab-btn').forEach(b => {
                     if (b.dataset.funnel === funnel) {
                         b.className = "tab-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all bg-blue-600 text-white shadow-md";
@@ -879,26 +846,43 @@
                         b.className = "tab-btn px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap text-slate-400 dark:text-slate-400 text-slate-700 hover:text-slate-200 transition-all";
                     }
                 });
-
                 renderCreatives();
             });
 
+            // Search
+            const searchInput = document.getElementById('searchInput');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            searchInput.addEventListener('input', (e) => {
+                window.searchQuery = e.target.value;
+                if (window.searchQuery.length > 0) clearSearchBtn.classList.remove('hidden');
+                else clearSearchBtn.classList.add('hidden');
+                renderCreatives();
+            });
+
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                window.searchQuery = '';
+                clearSearchBtn.classList.add('hidden');
+                renderCreatives();
+            });
+
+            // Dynamic Niche Pills Click
+            const nichePillContainer = document.getElementById('nichePillContainer');
             nichePillContainer.addEventListener('click', (e) => {
                 const pill = e.target.closest('.niche-pill');
                 if (!pill) return;
-
-                activeCategory = pill.dataset.cat;
+                window.activeCategory = pill.dataset.cat;
                 renderCategoryPills();
                 renderCreatives();
             });
 
+            // Reset Filters
             document.getElementById('resetFiltersBtn').addEventListener('click', () => {
-                activeFunnel = 'all';
-                activeCategory = 'all';
-                searchQuery = '';
+                window.activeFunnel = 'all';
+                window.activeCategory = 'all';
+                window.searchQuery = '';
                 searchInput.value = '';
                 clearSearchBtn.classList.add('hidden');
-
                 funnelTabs.querySelectorAll('.tab-btn').forEach(b => {
                     if (b.dataset.funnel === 'all') {
                         b.className = "tab-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all bg-blue-600 text-white shadow-md";
@@ -906,16 +890,16 @@
                         b.className = "tab-btn px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap text-slate-400 dark:text-slate-400 text-slate-700 hover:text-slate-200 transition-all";
                     }
                 });
-
                 renderCategoryPills();
                 renderCreatives();
             });
 
-            const themeToggleBtn = document.getElementById('themeToggleBtn');
-            themeToggleBtn.addEventListener('click', () => {
+            // Theme Switcher
+            document.getElementById('themeToggleBtn').addEventListener('click', () => {
                 document.documentElement.classList.toggle('dark');
             });
 
+            // Modals
             const addModal = document.getElementById('addModal');
             const addCreativeBtn = document.getElementById('addCreativeBtn');
             const closeModalBtn = document.getElementById('closeModalBtn');
@@ -927,7 +911,7 @@
                 document.getElementById('modalTitle').textContent = 'Добавить креатив';
                 document.getElementById('formEditingId').value = '';
                 addCreativeForm.reset();
-                quickAddNicheContainer.classList.add('hidden');
+                document.getElementById('quickAddNicheContainer').classList.add('hidden');
                 addModal.classList.remove('hidden');
                 setTimeout(() => addModal.classList.remove('opacity-0'), 10);
             }
@@ -938,27 +922,24 @@
                     addModal.classList.add('hidden');
                     addCreativeForm.reset();
                     document.getElementById('formEditingId').value = '';
-                    quickAddNicheContainer.classList.add('hidden');
+                    document.getElementById('quickAddNicheContainer').classList.add('hidden');
                 }, 200);
             }
 
             addCreativeBtn.addEventListener('click', openAddModal);
-            if (closeModalBtn) closeModalBtn.addEventListener('click', closeAddModal);
-            if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeAddModal);
+            closeModalBtn.addEventListener('click', closeAddModal);
+            cancelModalBtn.addEventListener('click', closeAddModal);
 
             addCreativeForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-
                 let categoryVal = document.getElementById('formCategory').value;
                 if (categoryVal === '__NEW_NICHE__') {
-                    const quickVal = quickNicheInput.value.trim();
+                    const quickVal = document.getElementById('quickNicheInput').value.trim();
                     if (quickVal) {
-                        if (!categories.includes(quickVal)) {
-                            categories.push(quickVal);
-                        }
+                        if (!window.categories.includes(quickVal)) window.categories.push(quickVal);
                         categoryVal = quickVal;
                     } else {
-                        categoryVal = categories[0] || 'Общая';
+                        categoryVal = window.categories[0] || 'Общая';
                     }
                 }
 
@@ -972,11 +953,10 @@
                 const transcriptionVal = document.getElementById('formTranscription').value;
 
                 if (editingId) {
-                    // Update existing item
-                    const idx = creatives.findIndex(c => c.id === editingId);
+                    const idx = window.creatives.findIndex(c => c.id === editingId);
                     if (idx !== -1) {
-                        creatives[idx] = {
-                            ...creatives[idx],
+                        window.creatives[idx] = {
+                            ...window.creatives[idx],
                             title: titleVal,
                             funnel: funnelVal,
                             format: formatVal,
@@ -989,7 +969,6 @@
                     }
                     showToast("Креатив обновлен!");
                 } else {
-                    // Add new item
                     const newCreative = {
                         id: Date.now().toString(),
                         title: titleVal,
@@ -1002,21 +981,48 @@
                         views: 'Новый',
                         transcription: transcriptionVal
                     };
-                    creatives.unshift(newCreative);
+                    window.creatives.unshift(newCreative);
                     showToast("Креатив успешно добавлен!");
                 }
 
-                saveData();
+                window.saveData();
                 renderCreatives();
                 updateCounts();
                 closeAddModal();
             });
 
+            // Quick Add Niche Input Trigger
+            document.getElementById('formCategory').addEventListener('change', (e) => {
+                const container = document.getElementById('quickAddNicheContainer');
+                if (e.target.value === '__NEW_NICHE__') {
+                    container.classList.remove('hidden');
+                    document.getElementById('quickNicheInput').focus();
+                } else {
+                    container.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('quickNicheSaveBtn').addEventListener('click', () => {
+                const val = document.getElementById('quickNicheInput').value.trim();
+                if (!val) return;
+                if (!window.categories.includes(val)) {
+                    window.categories.push(val);
+                    window.saveData();
+                    renderCategoryPills();
+                    populateFormCategories();
+                    document.getElementById('formCategory').value = val;
+                    showToast(`Ниша "${val}" создана!`);
+                } else {
+                    document.getElementById('formCategory').value = val;
+                }
+                document.getElementById('quickNicheInput').value = '';
+                document.getElementById('quickAddNicheContainer').classList.add('hidden');
+            });
+
+            // Niche Modal
             const nicheModal = document.getElementById('nicheModal');
             const addNicheBtn = document.getElementById('addNicheBtn');
             const closeNicheModalBtn = document.getElementById('closeNicheModalBtn');
-            const saveNewNicheBtn = document.getElementById('saveNewNicheBtn');
-            const newNicheInput = document.getElementById('newNicheInput');
 
             function openNicheModal() {
                 renderNicheManagementList();
@@ -1028,50 +1034,102 @@
                 nicheModal.classList.add('opacity-0');
                 setTimeout(() => {
                     nicheModal.classList.add('hidden');
-                    newNicheInput.value = '';
+                    document.getElementById('newNicheInput').value = '';
                 }, 200);
             }
 
             addNicheBtn.addEventListener('click', openNicheModal);
             closeNicheModalBtn.addEventListener('click', closeNicheModal);
 
-            saveNewNicheBtn.addEventListener('click', () => {
-                const val = newNicheInput.value.trim();
+            document.getElementById('saveNewNicheBtn').addEventListener('click', () => {
+                const input = document.getElementById('newNicheInput');
+                const val = input.value.trim();
                 if (!val) return;
-
-                if (categories.includes(val)) {
+                if (window.categories.includes(val)) {
                     showToast('Такая ниша уже существует!');
                     return;
                 }
-
-                categories.push(val);
-                saveData();
+                window.categories.push(val);
+                window.saveData();
                 renderCategoryPills();
                 populateFormCategories();
                 renderNicheManagementList();
-                newNicheInput.value = '';
+                input.value = '';
                 showToast(`Ниша "${val}" добавлена!`);
             });
 
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeAddModal();
-                    closeNicheModal();
+            // Delete Modal
+            const deleteModal = document.getElementById('deleteModal');
+            const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+            function closeDeleteModal() {
+                deleteModal.classList.add('opacity-0');
+                setTimeout(() => {
+                    deleteModal.classList.add('hidden');
+                    window.creativeToDeleteId = null;
+                }, 200);
+            }
+
+            cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+            confirmDeleteBtn.addEventListener('click', () => {
+                if (window.creativeToDeleteId) {
+                    window.creatives = window.creatives.filter(c => c.id !== window.creativeToDeleteId);
+                    window.saveData();
+                    renderCreatives();
+                    updateCounts();
                     closeDeleteModal();
+                    showToast("Креатив удален");
                 }
             });
 
-            [addModal, nicheModal, deleteModal].forEach(modal => {
-                if (modal) {
-                    modal.addEventListener('click', (e) => {
-                        if (e.target === modal) {
-                            closeAddModal();
-                            closeNicheModal();
-                            closeDeleteModal();
-                        }
-                    });
+            // Initial render
+            window.renderApp();
+        });
+
+        // Firebase Cloud Async Setup
+        if (firebaseConfig) {
+            try {
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
                 }
-            });
+
+                isCloud = true;
+                const statusEl = document.getElementById('syncStatus');
+                if (statusEl) statusEl.classList.remove('hidden');
+
+                const cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
+                onSnapshot(cloudDocRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.data();
+                        if (data.categories && Array.isArray(data.categories)) {
+                            window.categories = Array.from(new Set([...window.categories, ...data.categories]));
+                        }
+                        if (data.creatives && Array.isArray(data.creatives)) {
+                            const map = new Map();
+                            data.creatives.forEach(item => map.set(item.id, item));
+                            window.creatives.forEach(item => {
+                                if (!map.has(item.id)) map.set(item.id, item);
+                            });
+                            window.creatives = Array.from(map.values());
+                        }
+                        saveLocal();
+                    } else {
+                        window.saveData();
+                    }
+                    window.renderApp();
+                }, (error) => {
+                    console.warn("Cloud live sync error:", error);
+                });
+            } catch(e) {
+                console.warn("Firebase initialization skipped:", e);
+            }
         }
     </script>
 </body>
