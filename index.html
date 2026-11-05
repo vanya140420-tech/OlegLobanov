@@ -1,7 +1,4 @@
-saveData();
-                renderCategoryPills();
-                populateFormCategories();
-                renderNicheManagementLis<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru" class="dark">
 <head>
     <meta charset="UTF-8">
@@ -52,7 +49,7 @@ saveData();
     <header class="sticky top-0 z-30 backdrop-blur-md bg-slate-900/90 dark:bg-slate-900/90 bg-white/90 border-b border-slate-800 dark:border-slate-800 border-slate-200 px-4 lg:px-8 py-3.5 transition-colors">
         <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
             
-            <!-- View Switcher -->
+            <!-- View Switcher & Status -->
             <div class="flex items-center space-x-4">
                 <div class="flex items-center space-x-3">
                     <div class="p-2.5 bg-blue-600/20 text-blue-500 rounded-xl border border-blue-500/30">
@@ -70,6 +67,12 @@ saveData();
                         <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
                         Аналитика
                     </button>
+                </div>
+
+                <!-- Cloud Sync Status Indicator -->
+                <div id="syncStatus" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[11px]">
+                    <i data-lucide="cloud-check" class="w-3.5 h-3.5"></i>
+                    <span>Облако подключено</span>
                 </div>
             </div>
 
@@ -240,148 +243,19 @@ saveData();
 
     </main>
 
-    <!-- MODAL 1: Add/Edit Creative -->
-    <div id="addModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
-        <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl w-full max-w-lg p-6 m-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button id="closeModalBtn" class="absolute right-4 top-4 text-slate-400 hover:text-white p-1 rounded-lg">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
+    <!-- Firebase Real-time Synchronization Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-            <h2 class="text-lg font-bold dark:text-white text-slate-900 mb-1">Добавить креатив</h2>
-            <p class="text-xs text-slate-400 mb-5">Загрузите видео или фото любого размера в вертикальном или горизонтальном формате.</p>
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'creatives-db-shared-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
 
-            <form id="addCreativeForm" class="space-y-4 text-xs">
-                <div>
-                    <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Название / Оффер *</label>
-                    <input type="text" required id="formTitle" placeholder="Напр.: 3 ошибки в уходе за кожей" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
+        let db = null;
+        let auth = null;
+        let isCloudEnabled = false;
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Направление (Воронка) *</label>
-                        <select id="formFunnel" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="free">🟢 Бесплатное событие</option>
-                            <option value="paid">💳 Платное событие</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Тип медиа *</label>
-                        <select id="formFormat" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="video">📹 Видео (Reels / MP4 / Любой размер)</option>
-                            <option value="static">🖼 Изображение / Фото / Баннер</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Ориентация Видео/Фото *</label>
-                        <select id="formOrientation" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="vertical">📱 Вертикальное (9:16 - Reels/TikTok)</option>
-                            <option value="horizontal">🖥 Горизонтальное (16:9 - YouTube/Стандарт)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Ниша *</label>
-                        <div class="flex gap-2">
-                            <select id="formCategory" class="flex-1 bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <!-- Populated from JS categories -->
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Inline Quick Add Niche Input (Hidden by default) -->
-                <div id="quickAddNicheContainer" class="hidden bg-slate-900/90 dark:bg-slate-900/90 bg-slate-200 p-3 rounded-xl border border-blue-500/40 space-y-2">
-                    <label class="block text-[11px] font-semibold text-blue-400">Название новой ниши:</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="quickNicheInput" placeholder="Напр.: Инвестиции" class="flex-1 bg-slate-950 dark:bg-slate-950 bg-white border border-slate-700 dark:border-slate-700 border-slate-300 rounded-lg px-3 py-1.5 dark:text-slate-100 text-slate-900 focus:outline-none">
-                        <button type="button" id="quickNicheSaveBtn" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500">Сохранить</button>
-                    </div>
-                </div>
-
-                <!-- Media Upload Tab Option -->
-                <div>
-                    <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Загрузка файла медиа (Без ограничений по размеру)</label>
-                    <input type="file" id="formFileInput" accept="video/*,image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl p-1 bg-slate-900 dark:bg-slate-900 bg-slate-100">
-                    <p class="text-[10px] text-slate-500 mt-1">Или вставьте прямую ссылку на файл ниже:</p>
-                </div>
-
-                <div>
-                    <input type="url" id="formMediaUrl" placeholder="https://... (ссылка на видео или изображение)" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-
-                <div>
-                    <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Полная транскрибация текста *</label>
-                    <textarea id="formTranscription" rows="4" required placeholder="Введите текст с креатива или полную расшифровку речи эксперта..." class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                </div>
-
-                <div class="pt-2 flex justify-end gap-2">
-                    <button type="button" id="cancelModalBtn" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800">Отмена</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/20">Сохранить</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: Manage Dynamic Niches -->
-    <div id="nicheModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
-        <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl w-full max-w-md p-6 m-4 shadow-2xl relative">
-            <button id="closeNicheModalBtn" class="absolute right-4 top-4 text-slate-400 hover:text-white p-1 rounded-lg">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-
-            <h2 class="text-lg font-bold dark:text-white text-slate-900 mb-1">Управление Нишами</h2>
-            <p class="text-xs text-slate-400 mb-4">Добавляйте новые или удаляйте неиспользуемые категории.</p>
-
-            <div class="space-y-4 text-xs">
-                <!-- Add new Niche form -->
-                <div class="flex gap-2">
-                    <input type="text" id="newNicheInput" placeholder="Новая ниша (напр. Недвижимость)" class="flex-1 bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <button id="saveNewNicheBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl">
-                        Добавить
-                    </button>
-                </div>
-
-                <div class="border-t border-slate-800 dark:border-slate-800 border-slate-200 pt-3">
-                    <label class="block text-slate-400 font-medium mb-2">Существующие ниши:</label>
-                    <div id="nicheList" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 3: Delete Confirmation Modal -->
-    <div id="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
-        <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl w-full max-w-sm p-6 m-4 shadow-2xl relative text-center">
-            <div class="w-12 h-12 bg-rose-500/10 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
-                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-            </div>
-            <h3 class="text-base font-bold dark:text-white text-slate-900 mb-1">Удалить креатив?</h3>
-            <p class="text-xs text-slate-400 mb-6">Это действие нельзя будет отменить. Креатив будет полностью удален из вашей базы данных.</p>
-            
-            <div class="flex gap-3 justify-center text-xs">
-                <button id="cancelDeleteBtn" class="flex-1 py-2.5 rounded-xl border border-slate-700 dark:border-slate-700 border-slate-300 dark:text-slate-300 text-slate-700 hover:bg-slate-800 dark:hover:bg-slate-800 hover:bg-slate-100 font-medium">
-                    Отмена
-                </button>
-                <button id="confirmDeleteBtn" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold shadow-lg shadow-rose-600/20">
-                    Удалить
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2.5 px-4 py-3 bg-slate-900 dark:bg-slate-900 bg-white text-slate-100 dark:text-slate-100 text-slate-900 border border-slate-700 rounded-xl shadow-xl text-xs font-medium">
-        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
-        <span id="toastMsg">Успешно!</span>
-    </div>
-
-    <!-- Main Logic Script -->
-    <script>
-        // Default initial categories
         const defaultCategories = [
             'Beauty & Уход',
             'Экспертные блоги',
@@ -390,7 +264,6 @@ saveData();
             'Курсы & Образование'
         ];
 
-        // Default initial creatives with orientation support
         const initialCreatives = [
             {
                 id: '1',
@@ -400,6 +273,7 @@ saveData();
                 format: 'video',
                 orientation: 'vertical',
                 mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-woman-applying-face-cream-41584-large.mp4',
+                posterUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
                 views: '45.2K',
                 transcription: 'Хватит умываться горячей водой по утрам! Это первая причина сухой кожи. Вторая ошибка — вы наносите сыворотку прямо из пипетки на лицо, касаясь кожи стеклом. Третья — отсутствие SPF. Хочешь гайд по правильному уходу? Пиши слово "УХОД" в комментарии и забирай чек-лист!'
             },
@@ -411,6 +285,7 @@ saveData();
                 format: 'video',
                 orientation: 'horizontal',
                 mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-young-woman-working-on-laptop-42828-large.mp4',
+                posterUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80',
                 views: '128.9K',
                 transcription: 'Как получать по 30 целевых заявок в день с помощью простых видео? Я собрал связку из 3 элементов: Цепляющий хук в первые 2 секунды, разбор частой боли вашей аудитории и автоматическое кодовое слово в директ. Посмотри мой бесплатный 10-минутный разбор по ссылке!'
             },
@@ -422,6 +297,7 @@ saveData();
                 format: 'video',
                 orientation: 'vertical',
                 mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-working-overtime-in-a-clean-office-43029-large.mp4',
+                posterUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
                 views: '8.4K',
                 transcription: 'Охваты падают, а клиенты не покупают? Приглашаю на практический онлайн мастер-класс. За 2 часа покажем реальные кейсы внедрения сюжетных линий. Билет стоит всего 990 рублей. Жми на кнопку под видео и бронируй место.'
             },
@@ -433,67 +309,158 @@ saveData();
                 format: 'static',
                 orientation: 'horizontal',
                 mediaUrl: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80',
+                posterUrl: '',
                 views: '32.1K',
                 transcription: 'Идеальное сцепление даже при интенсивных тренировках. Премиальный эко-материал. Скидка -30% только до конца недели. Заказывайте с бесплатной доставкой на маркетплейсах!'
-            },
-            {
-                id: '5',
-                title: 'Как сжечь жир на животе без жестких диет за 21 день',
-                funnel: 'free',
-                category: 'Фитнес & Здоровье',
-                format: 'video',
-                orientation: 'vertical',
-                mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-athletic-woman-doing-stretching-exercises-40348-large.mp4',
-                views: '94.0K',
-                transcription: 'Перестань делать скручивания на пресс! Это не помогает убрать жир. Главное — это дефицит калорий и удержание белка. Я разработала бесплатную программу питания и коротких тренировок на 3 недели. Переходи в бота и скачивай меню!'
             }
         ];
 
-        // App State
-        let categories = JSON.parse(localStorage.getItem('analytics_categories')) || defaultCategories;
-        let creatives = JSON.parse(localStorage.getItem('analytics_creatives')) || initialCreatives;
+        // Read Local Data First so user never loses data regardless of device or network status
+        let localSavedCategories = null;
+        let localSavedCreatives = null;
+        try {
+            localSavedCategories = JSON.parse(localStorage.getItem('analytics_categories'));
+            localSavedCreatives = JSON.parse(localStorage.getItem('analytics_creatives'));
+        } catch (e) {
+            console.warn("Storage error fallback", e);
+        }
+
+        window.categories = localSavedCategories && localSavedCategories.length > 0 ? localSavedCategories : defaultCategories;
+        window.creatives = localSavedCreatives && localSavedCreatives.length > 0 ? localSavedCreatives : initialCreatives;
         
-        let currentView = 'library'; 
-        let activeFunnel = 'all';    
-        let activeCategory = 'all';  
-        let searchQuery = '';
-        let creativeToDeleteId = null;
+        window.currentView = 'library'; 
+        window.activeFunnel = 'all';    
+        window.activeCategory = 'all';  
+        window.searchQuery = '';
+        window.creativeToDeleteId = null;
 
+        // Initialize Cloud Sync with Instant Local Fallback
+        async function initCloud() {
+            // Render local data immediately so app opens instantly on any device
+            if (window.renderApp) window.renderApp();
+
+            if (!firebaseConfig) {
+                console.log("Локальный режим автономного доступа (без внешних зависимостей).");
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                isCloudEnabled = true;
+                const statusEl = document.getElementById('syncStatus');
+                if (statusEl) statusEl.classList.remove('hidden');
+
+                const cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
+
+                // Real-Time listener syncs data across all devices opening the link
+                onSnapshot(cloudDocRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.data();
+                        
+                        if (data.categories && Array.isArray(data.categories)) {
+                            const mergedCats = Array.from(new Set([...window.categories, ...data.categories]));
+                            window.categories = mergedCats;
+                        }
+
+                        if (data.creatives && Array.isArray(data.creatives)) {
+                            const map = new Map();
+                            // Keep cloud items or local items priority seamlessly
+                            data.creatives.forEach(item => map.set(item.id, item));
+                            window.creatives.forEach(item => {
+                                if (!map.has(item.id)) map.set(item.id, item);
+                            });
+                            window.creatives = Array.from(map.values());
+                        }
+
+                        window.saveLocalOnly();
+                    } else {
+                        window.syncToCloud();
+                    }
+                    if (window.renderApp) window.renderApp();
+                }, (error) => {
+                    console.error("Cloud snapshot error:", error);
+                    if (window.renderApp) window.renderApp();
+                });
+
+            } catch (err) {
+                console.warn("Cloud connection fallback, local state active:", err);
+                if (window.renderApp) window.renderApp();
+            }
+        }
+
+        window.syncToCloud = async function() {
+            if (!isCloudEnabled || !db) return;
+            try {
+                const cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
+                await setDoc(cloudDocRef, {
+                    categories: window.categories,
+                    creatives: window.creatives,
+                    updatedAt: Date.now()
+                });
+            } catch (err) {
+                console.error("Cloud save error:", err);
+            }
+        };
+
+        window.saveLocalOnly = function() {
+            try {
+                localStorage.setItem('analytics_categories', JSON.stringify(window.categories));
+                localStorage.setItem('analytics_creatives', JSON.stringify(window.creatives));
+            } catch (e) {
+                console.warn("localStorage write failed:", e);
+            }
+        };
+
+        window.saveData = function() {
+            window.saveLocalOnly();
+            window.syncToCloud();
+        };
+
+        initCloud();
+    </script>
+
+    <!-- Main Logic Script -->
+    <script>
         // UI Elements
-        const librarySection = document.getElementById('librarySection');
-        const analyticsSection = document.getElementById('analyticsSection');
-        const viewLibraryBtn = document.getElementById('viewLibraryBtn');
-        const viewAnalyticsBtn = document.getElementById('viewAnalyticsBtn');
-        const creativesGrid = document.getElementById('creativesGrid');
-        const emptyState = document.getElementById('emptyState');
-        const searchInput = document.getElementById('searchInput');
-        const clearSearchBtn = document.getElementById('clearSearchBtn');
-        const nichePillContainer = document.getElementById('nichePillContainer');
-        const funnelTabs = document.getElementById('funnelTabs');
-        const resultsCount = document.getElementById('resultsCount');
+        let librarySection, analyticsSection, viewLibraryBtn, viewAnalyticsBtn, creativesGrid, emptyState, searchInput, clearSearchBtn, nichePillContainer, funnelTabs, resultsCount;
 
-        // Initialization
         document.addEventListener('DOMContentLoaded', () => {
+            librarySection = document.getElementById('librarySection');
+            analyticsSection = document.getElementById('analyticsSection');
+            viewLibraryBtn = document.getElementById('viewLibraryBtn');
+            viewAnalyticsBtn = document.getElementById('viewAnalyticsBtn');
+            creativesGrid = document.getElementById('creativesGrid');
+            emptyState = document.getElementById('emptyState');
+            searchInput = document.getElementById('searchInput');
+            clearSearchBtn = document.getElementById('clearSearchBtn');
+            nichePillContainer = document.getElementById('nichePillContainer');
+            funnelTabs = document.getElementById('funnelTabs');
+            resultsCount = document.getElementById('resultsCount');
+
+            setupEventListeners();
+            renderApp();
+        });
+
+        window.renderApp = function() {
             renderCategoryPills();
             populateFormCategories();
             renderCreatives();
             updateCounts();
+            if (currentView === 'analytics') {
+                renderAnalytics();
+            }
             lucide.createIcons();
-            setupEventListeners();
-        });
+        };
 
-        function saveData() {
-            const serializableCreatives = creatives.map(item => {
-                if (item.mediaUrl && item.mediaUrl.startsWith('blob:')) {
-                    return { ...item, mediaUrl: '' }; 
-                }
-                return item;
-            });
-            localStorage.setItem('analytics_categories', JSON.stringify(categories));
-            localStorage.setItem('analytics_creatives', JSON.stringify(serializableCreatives));
-        }
-
-        // View Navigation Switcher
         function setView(view) {
             currentView = view;
             if (view === 'library') {
@@ -510,8 +477,8 @@ saveData();
             }
         }
 
-        // Render Category Pills
         function renderCategoryPills() {
+            if (!nichePillContainer) return;
             let html = `
                 <button data-cat="all" class="niche-pill px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all border ${activeCategory === 'all' ? 'bg-blue-600/20 text-blue-500 border-blue-500/40 font-semibold' : 'bg-slate-900/60 dark:bg-slate-900/60 bg-white text-slate-400 dark:text-slate-400 text-slate-700 border-slate-800 dark:border-slate-800 border-slate-300 hover:border-slate-500'}">
                     Все ниши
@@ -530,15 +497,14 @@ saveData();
             nichePillContainer.innerHTML = html;
         }
 
-        // Populate Categories in Forms
         function populateFormCategories() {
             const formCategorySelect = document.getElementById('formCategory');
+            if (!formCategorySelect) return;
             let optionsHtml = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
             optionsHtml += `<option value="__NEW_NICHE__" class="text-blue-400 font-semibold">+ Создать новую нишу...</option>`;
             formCategorySelect.innerHTML = optionsHtml;
         }
 
-        // Filter Logic
         function getFilteredCreatives() {
             return creatives.filter(item => {
                 if (activeFunnel !== 'all' && item.funnel !== activeFunnel) return false;
@@ -557,8 +523,8 @@ saveData();
             });
         }
 
-        // Render Cards Grid
         function renderCreatives() {
+            if (!creativesGrid) return;
             const filtered = getFilteredCreatives();
             resultsCount.textContent = filtered.length;
 
@@ -575,6 +541,7 @@ saveData();
                 const isVideo = item.format === 'video';
                 const isVertical = item.orientation === 'vertical';
                 const mediaSrc = item.mediaUrl || (isVideo ? 'https://assets.mixkit.co/videos/preview/mixkit-woman-applying-face-cream-41584-large.mp4' : 'https://placehold.co/600x337/1e293b/94a3b8?text=Превью+Фото');
+                const posterSrc = item.posterUrl || (isVideo ? 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80' : '');
 
                 const aspectClass = isVertical ? 'aspect-[9/16] max-h-[480px]' : 'aspect-[16/9]';
 
@@ -584,7 +551,7 @@ saveData();
                         <!-- Media View -->
                         <div class="relative ${aspectClass} bg-slate-950 border-b border-slate-800 dark:border-slate-800 border-slate-200 overflow-hidden flex items-center justify-center">
                             ${isVideo ? `
-                                <video src="${mediaSrc}" controls class="w-full h-full object-cover" preload="metadata" poster="https://placehold.co/600x337/1e293b/94a3b8?text=Видео+Креатив"></video>
+                                <video src="${mediaSrc}" ${posterSrc ? `poster="${posterSrc}"` : ''} controls class="w-full h-full object-cover" preload="metadata"></video>
                             ` : `
                                 <img src="${mediaSrc}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x337/1e293b/94a3b8?text=Изображение'">
                             `}
@@ -613,10 +580,15 @@ saveData();
                         <div class="p-4 flex-1 flex flex-col justify-between space-y-4">
                             <div>
                                 <div class="flex items-center justify-between text-xs mb-1.5">
-                                    <span class="text-blue-500 font-medium">${item.category}</span>
-                                    <button onclick="promptDeleteCreative('${item.id}')" class="text-slate-400 hover:text-rose-500 p-1 rounded transition-colors" title="Удалить">
-                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                    </button>
+                                    <span class="text-blue-500 font-medium">${escapeHtml(item.category)}</span>
+                                    <div class="flex items-center space-x-1">
+                                        <button onclick="editCreative('${item.id}')" class="text-slate-400 hover:text-blue-400 p-1 rounded transition-colors" title="Редактировать">
+                                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                        <button onclick="promptDeleteCreative('${item.id}')" class="text-slate-400 hover:text-rose-500 p-1 rounded transition-colors" title="Удалить">
+                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <h3 class="font-semibold dark:text-slate-100 text-slate-900 text-sm line-clamp-2 leading-snug group-hover:text-blue-500 transition-colors">
@@ -648,7 +620,6 @@ saveData();
             lucide.createIcons();
         }
 
-        // Render Advanced Analytics Tab Data
         function renderAnalytics() {
             const total = creatives.length;
             const freeCount = creatives.filter(c => c.funnel === 'free').length;
@@ -702,7 +673,7 @@ saveData();
                 return `
                     <div class="space-y-1">
                         <div class="flex justify-between text-xs">
-                            <span class="dark:text-slate-300 text-slate-800 font-medium">${cat}</span>
+                            <span class="dark:text-slate-300 text-slate-800 font-medium">${escapeHtml(cat)}</span>
                             <span class="text-slate-400">${cnt} креатив(ов) (${pct}%)</span>
                         </div>
                         <div class="w-full h-1.5 bg-slate-950 dark:bg-slate-950 bg-slate-200 rounded-full overflow-hidden">
@@ -717,9 +688,11 @@ saveData();
 
         // Helpers
         function escapeHtml(str) {
+            if (!str) return '';
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
         function escapeJsString(str) {
+            if (!str) return '';
             return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
         }
 
@@ -742,7 +715,6 @@ saveData();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
             }
-
             showToast("Текст скопирован!");
         };
 
@@ -758,7 +730,30 @@ saveData();
             }, 2500);
         }
 
-        // Deletion Confirmation Modal Logic
+        // Editing Existing Creative Logic
+        window.editCreative = function(id) {
+            const item = creatives.find(c => c.id === id);
+            if (!item) return;
+
+            populateFormCategories();
+
+            document.getElementById('modalTitle').textContent = 'Редактировать креатив';
+            document.getElementById('formEditingId').value = item.id;
+            document.getElementById('formTitle').value = item.title;
+            document.getElementById('formFunnel').value = item.funnel;
+            document.getElementById('formFormat').value = item.format;
+            document.getElementById('formOrientation').value = item.orientation;
+            document.getElementById('formCategory').value = item.category;
+            document.getElementById('formMediaUrl').value = item.mediaUrl || '';
+            document.getElementById('formPosterUrl').value = item.posterUrl || '';
+            document.getElementById('formTranscription').value = item.transcription;
+
+            const addModal = document.getElementById('addModal');
+            addModal.classList.remove('hidden');
+            setTimeout(() => addModal.classList.remove('opacity-0'), 10);
+        };
+
+        // Deletion Modal Logic
         const deleteModal = document.getElementById('deleteModal');
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
@@ -790,12 +785,11 @@ saveData();
             }
         });
 
-        // Render Niche Management Modal List
         function renderNicheManagementList() {
             const nicheList = document.getElementById('nicheList');
             nicheList.innerHTML = categories.map((cat, idx) => `
                 <div class="flex items-center justify-between bg-slate-900 dark:bg-slate-900 bg-slate-100 px-3 py-2 rounded-xl border border-slate-800 dark:border-slate-800 border-slate-300">
-                    <span class="dark:text-slate-200 text-slate-800">${cat}</span>
+                    <span class="dark:text-slate-200 text-slate-800">${escapeHtml(cat)}</span>
                     <button onclick="removeNiche(${idx})" class="text-slate-400 hover:text-rose-500 transition-colors p-1" title="Удалить нишу">
                         <i data-lucide="x" class="w-3.5 h-3.5"></i>
                     </button>
@@ -819,7 +813,6 @@ saveData();
             showToast(`Ниша "${removed}" удалена`);
         };
 
-        // Event Listeners
         function setupEventListeners() {
             viewLibraryBtn.addEventListener('click', () => setView('library'));
             viewAnalyticsBtn.addEventListener('click', () => setView('analytics'));
@@ -931,6 +924,9 @@ saveData();
 
             function openAddModal() {
                 populateFormCategories();
+                document.getElementById('modalTitle').textContent = 'Добавить креатив';
+                document.getElementById('formEditingId').value = '';
+                addCreativeForm.reset();
                 quickAddNicheContainer.classList.add('hidden');
                 addModal.classList.remove('hidden');
                 setTimeout(() => addModal.classList.remove('opacity-0'), 10);
@@ -941,13 +937,14 @@ saveData();
                 setTimeout(() => {
                     addModal.classList.add('hidden');
                     addCreativeForm.reset();
+                    document.getElementById('formEditingId').value = '';
                     quickAddNicheContainer.classList.add('hidden');
                 }, 200);
             }
 
             addCreativeBtn.addEventListener('click', openAddModal);
-            closeModalBtn.addEventListener('click', closeAddModal);
-            cancelModalBtn.addEventListener('click', closeAddModal);
+            if (closeModalBtn) closeModalBtn.addEventListener('click', closeAddModal);
+            if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeAddModal);
 
             addCreativeForm.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -958,8 +955,6 @@ saveData();
                     if (quickVal) {
                         if (!categories.includes(quickVal)) {
                             categories.push(quickVal);
-                            saveData();
-                            renderCategoryPills();
                         }
                         categoryVal = quickVal;
                     } else {
@@ -967,32 +962,54 @@ saveData();
                     }
                 }
 
-                const fileInput = document.getElementById('formFileInput');
-                let mediaUrl = document.getElementById('formMediaUrl').value;
+                const editingId = document.getElementById('formEditingId').value;
+                const titleVal = document.getElementById('formTitle').value;
+                const funnelVal = document.getElementById('formFunnel').value;
+                const formatVal = document.getElementById('formFormat').value;
+                const orientationVal = document.getElementById('formOrientation').value;
+                const mediaUrlVal = document.getElementById('formMediaUrl').value;
+                const posterUrlVal = document.getElementById('formPosterUrl').value;
+                const transcriptionVal = document.getElementById('formTranscription').value;
 
-                if (fileInput.files && fileInput.files[0]) {
-                    const file = fileInput.files[0];
-                    mediaUrl = URL.createObjectURL(file);
+                if (editingId) {
+                    // Update existing item
+                    const idx = creatives.findIndex(c => c.id === editingId);
+                    if (idx !== -1) {
+                        creatives[idx] = {
+                            ...creatives[idx],
+                            title: titleVal,
+                            funnel: funnelVal,
+                            format: formatVal,
+                            orientation: orientationVal,
+                            category: categoryVal,
+                            mediaUrl: mediaUrlVal,
+                            posterUrl: posterUrlVal,
+                            transcription: transcriptionVal
+                        };
+                    }
+                    showToast("Креатив обновлен!");
+                } else {
+                    // Add new item
+                    const newCreative = {
+                        id: Date.now().toString(),
+                        title: titleVal,
+                        funnel: funnelVal,
+                        format: formatVal,
+                        orientation: orientationVal,
+                        category: categoryVal,
+                        mediaUrl: mediaUrlVal,
+                        posterUrl: posterUrlVal,
+                        views: 'Новый',
+                        transcription: transcriptionVal
+                    };
+                    creatives.unshift(newCreative);
+                    showToast("Креатив успешно добавлен!");
                 }
 
-                const newCreative = {
-                    id: Date.now().toString(),
-                    title: document.getElementById('formTitle').value,
-                    funnel: document.getElementById('formFunnel').value,
-                    format: document.getElementById('formFormat').value,
-                    orientation: document.getElementById('formOrientation').value,
-                    category: categoryVal,
-                    mediaUrl: mediaUrl,
-                    views: 'Новый',
-                    transcription: document.getElementById('formTranscription').value
-                };
-
-                creatives.unshift(newCreative);
                 saveData();
                 renderCreatives();
                 updateCounts();
                 closeAddModal();
-                showToast("Креатив успешно добавлен!");
             });
 
             const nicheModal = document.getElementById('nicheModal');
@@ -1027,7 +1044,11 @@ saveData();
                     return;
                 }
 
-                categories.push(val);t();
+                categories.push(val);
+                saveData();
+                renderCategoryPills();
+                populateFormCategories();
+                renderNicheManagementList();
                 newNicheInput.value = '';
                 showToast(`Ниша "${val}" добавлена!`);
             });
@@ -1041,13 +1062,15 @@ saveData();
             });
 
             [addModal, nicheModal, deleteModal].forEach(modal => {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        closeAddModal();
-                        closeNicheModal();
-                        closeDeleteModal();
-                    }
-                });
+                if (modal) {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            closeAddModal();
+                            closeNicheModal();
+                            closeDeleteModal();
+                        }
+                    });
+                }
             });
         }
     </script>
