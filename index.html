@@ -84,7 +84,6 @@
 
             <!-- Action Buttons -->
             <div class="flex items-center space-x-2">
-                <!-- Main Save & Share Button -->
                 <button id="saveAndShareBtn" class="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-95" title="Сохранить изменения и получить ссылку для друга">
                     <i data-lucide="save" class="w-4 h-4"></i>
                     Сохранить и поделиться
@@ -208,7 +207,6 @@
                         <i data-lucide="pie-chart" class="w-4 h-4 text-blue-500"></i> Распределение по Воронкам и Ориентации
                     </h3>
                     
-                    <!-- Funnel Progress Bar -->
                     <div class="space-y-2">
                         <div class="flex justify-between text-xs text-slate-400">
                             <span>Бесплатные (<span id="pctFree">0</span>%)</span>
@@ -271,7 +269,7 @@
                     <div>
                         <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Тип медиа *</label>
                         <select id="formFormat" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="video">📹 Видео (Reels / MP4)</option>
+                            <option value="video">📹 Видео (Все форматы: MP4, MOV, WEBM, MKV)</option>
                             <option value="static">🖼 Изображение / Фото / Баннер</option>
                         </select>
                     </div>
@@ -293,7 +291,7 @@
                     </div>
                 </div>
 
-                <!-- Inline Quick Add Niche Input -->
+                <!-- Quick Add Niche -->
                 <div id="quickAddNicheContainer" class="hidden bg-slate-900/90 dark:bg-slate-900/90 bg-slate-200 p-3 rounded-xl border border-blue-500/40 space-y-2">
                     <label class="block text-[11px] font-semibold text-blue-400">Название новой ниши:</label>
                     <div class="flex gap-2">
@@ -302,52 +300,48 @@
                     </div>
                 </div>
 
-                <!-- Media Source Input (URL or Upload File) -->
+                <!-- Media Source Input -->
                 <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
-                        <label class="block font-medium dark:text-slate-300 text-slate-700">Медиафайл (Видео / Фото)</label>
+                        <label class="block font-medium dark:text-slate-300 text-slate-700">Медиафайл (Любое видео / Фото)</label>
                         <div class="flex bg-slate-800 p-0.5 rounded-lg border border-slate-700 text-[10px]">
                             <button type="button" id="mediaTypeUrlBtn" class="px-2 py-0.5 rounded bg-blue-600 text-white font-medium">Ссылка URL</button>
-                            <button type="button" id="mediaTypeFileBtn" class="px-2 py-0.5 rounded text-slate-400 hover:text-white font-medium">С ноутбука</button>
+                            <button type="button" id="mediaTypeFileBtn" class="px-2 py-0.5 rounded text-slate-400 hover:text-white font-medium">С устройство</button>
                         </div>
                     </div>
 
-                    <!-- URL Input Box -->
                     <div id="mediaUrlBox">
-                        <input type="url" id="formMediaUrl" placeholder="https://... (ссылка на MP4 или картинку)" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="url" id="formMediaUrl" placeholder="https://... (MP4, MOV, WEBM, YouTube, VK или картинка)" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
-                    <!-- File Upload Input Box -->
                     <div id="mediaFileBox" class="hidden">
                         <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-blue-500 bg-slate-900/50 hover:bg-slate-900 rounded-xl p-4 cursor-pointer transition-all">
                             <i data-lucide="upload-cloud" class="w-6 h-6 text-blue-500 mb-1"></i>
-                            <span class="text-xs text-slate-300 font-medium" id="mediaFileName">Выберите файл на ноутбуке</span>
-                            <span class="text-[10px] text-slate-500">MP4, MOV, WEBM, JPG, PNG</span>
+                            <span class="text-xs text-slate-300 font-medium" id="mediaFileName">Выберите файл с компьютера / телефона</span>
+                            <span class="text-[10px] text-slate-400 mt-1">Поддерживает ВСЕ форматы: MP4, MOV, WEBM, MKV, AVI, JPG, PNG</span>
                             <input type="file" id="formMediaFile" accept="video/*,image/*" class="hidden">
                         </label>
                     </div>
                 </div>
 
-                <!-- Cover/Poster Source Input (URL or Upload File) -->
+                <!-- Cover Source Input -->
                 <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
-                        <label class="block font-medium dark:text-slate-300 text-slate-700">Обложка / Прэвью</label>
+                        <label class="block font-medium dark:text-slate-300 text-slate-700">Обложка / Превью (опционально)</label>
                         <div class="flex bg-slate-800 p-0.5 rounded-lg border border-slate-700 text-[10px]">
                             <button type="button" id="posterTypeUrlBtn" class="px-2 py-0.5 rounded bg-blue-600 text-white font-medium">Ссылка URL</button>
-                            <button type="button" id="posterTypeFileBtn" class="px-2 py-0.5 rounded text-slate-400 hover:text-white font-medium">С ноутбука</button>
+                            <button type="button" id="posterTypeFileBtn" class="px-2 py-0.5 rounded text-slate-400 hover:text-white font-medium">С устройства</button>
                         </div>
                     </div>
 
-                    <!-- Poster URL Input Box -->
                     <div id="posterUrlBox">
                         <input type="url" id="formPosterUrl" placeholder="https://... (ссылка на картинку-превью)" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
-                    <!-- Poster File Upload Box -->
                     <div id="posterFileBox" class="hidden">
                         <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-blue-500 bg-slate-900/50 hover:bg-slate-900 rounded-xl p-3 cursor-pointer transition-all">
                             <i data-lucide="image" class="w-5 h-5 text-purple-400 mb-1"></i>
-                            <span class="text-xs text-slate-300 font-medium" id="posterFileName">Выберите обложку на ноутбуке</span>
+                            <span class="text-xs text-slate-300 font-medium" id="posterFileName">Выберите обложку</span>
                             <span class="text-[10px] text-slate-500">JPG, PNG, WEBP</span>
                             <input type="file" id="formPosterFile" accept="image/*" class="hidden">
                         </label>
@@ -427,7 +421,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Default Categories Template
+        // Default Categories
         const defaultCategories = [
             'Beauty & Уход',
             'Экспертные блоги',
@@ -436,14 +430,12 @@
             'Курсы & Образование'
         ];
 
-        // Clean initial state
         const defaultCreatives = [];
 
-        // Temporary Base64 Storage forUploaded Files
-        let uploadedMediaBase64 = null;
-        let uploadedPosterBase64 = null;
+        // Dynamic Storage for Uploaded Media
+        let uploadedMediaData = null; 
+        let uploadedPosterData = null;
 
-        // Safe Storage & Shareable URL Parser
         function loadInitialState() {
             try {
                 if (window.location.hash && window.location.hash.startsWith('#data=')) {
@@ -483,7 +475,6 @@
         window.searchQuery = '';
         window.creativeToDeleteId = null;
 
-        // Shared Storage Key
         const appId = 'shared-creatives-global-v1';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         let db = null;
@@ -493,7 +484,9 @@
             try {
                 localStorage.setItem('analytics_categories', JSON.stringify(window.categories));
                 localStorage.setItem('analytics_creatives', JSON.stringify(window.creatives));
-            } catch(e) {}
+            } catch(e) {
+                console.warn("Storage quota exceeded or storage disabled:", e);
+            }
         }
 
         window.saveData = async function() {
@@ -512,7 +505,6 @@
             }
         };
 
-        // Render Functions
         window.renderApp = function() {
             renderCategoryPills();
             populateFormCategories();
@@ -564,6 +556,22 @@
             });
         }
 
+        window.handleVideoError = function(videoEl, rawSrc) {
+            const container = videoEl.parentElement;
+            if (!container) return;
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center text-center p-4 h-full bg-slate-950 text-slate-300">
+                    <i data-lucide="video-off" class="w-8 h-8 text-amber-500 mb-2"></i>
+                    <p class="text-xs font-semibold mb-1">Формат видео не поддерживается плеером браузера</p>
+                    <p class="text-[10px] text-slate-400 mb-3 max-w-[200px]">Некоторые MOV, AVI или ProRes файлы требуют стороннего проигрывателя</p>
+                    ${rawSrc ? `<a href="${rawSrc}" download target="_blank" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[11px] font-medium transition-all flex items-center gap-1.5">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i> Скачать файл
+                    </a>` : ''}
+                </div>
+            `;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        };
+
         function renderCreatives() {
             const grid = document.getElementById('creativesGrid');
             const empty = document.getElementById('emptyState');
@@ -587,10 +595,8 @@
                 const isVertical = item.orientation === 'vertical';
                 
                 const defaultVideo = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
-                const defaultPoster = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80';
-                
                 const mediaSrc = item.mediaUrl || (isVideo ? defaultVideo : 'https://placehold.co/600x337/1e293b/94a3b8?text=Изображение');
-                const posterSrc = item.posterUrl || (isVideo ? defaultPoster : '');
+                const posterSrc = item.posterUrl || '';
                 const aspectClass = isVertical ? 'aspect-[9/16] max-h-[480px]' : 'aspect-[16/9]';
 
                 return `
@@ -598,12 +604,12 @@
                         
                         <div class="relative ${aspectClass} bg-slate-950 border-b border-slate-800 dark:border-slate-800 border-slate-200 overflow-hidden flex items-center justify-center">
                             ${isVideo ? `
-                                <video src="${mediaSrc}" poster="${posterSrc}" controls playsinline preload="auto" class="w-full h-full object-cover"></video>
+                                <video src="${mediaSrc}" ${posterSrc ? `poster="${posterSrc}"` : ''} controls playsinline preload="metadata" onerror="handleVideoError(this, '${escapeJsString(mediaSrc)}')" class="w-full h-full object-cover"></video>
                             ` : `
-                                <img src="${mediaSrc}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x337/1e293b/94a3b8?text=Изображение'">
+                                <img src="${mediaSrc}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x337/1e293b/94a3b8?text=Ошибка+Загрузки+Картинки'">
                             `}
 
-                            <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none">
+                            <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none z-10">
                                 <span class="px-2.5 py-1 rounded-lg text-[10px] font-semibold tracking-wide backdrop-blur-md shadow-sm border ${isPaid ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'}">
                                     ${isPaid ? '💳 Платное' : '🟢 Бесплатное'}
                                 </span>
@@ -616,7 +622,7 @@
                             </div>
 
                             ${item.views ? `
-                                <div class="absolute bottom-3 right-3 px-2 py-0.5 rounded-md text-[10px] font-medium bg-black/70 backdrop-blur-md text-slate-300 border border-white/10 flex items-center gap-1">
+                                <div class="absolute bottom-3 right-3 px-2 py-0.5 rounded-md text-[10px] font-medium bg-black/70 backdrop-blur-md text-slate-300 border border-white/10 flex items-center gap-1 pointer-events-none z-10">
                                     <i data-lucide="eye" class="w-3 h-3 text-slate-400"></i> ${item.views}
                                 </div>
                             ` : ''}
@@ -788,13 +794,11 @@
             document.getElementById('formOrientation').value = item.orientation || 'vertical';
             document.getElementById('formCategory').value = item.category || window.categories[0];
             
-            // Reset upload file states
-            uploadedMediaBase64 = item.mediaUrl || null;
-            uploadedPosterBase64 = item.posterUrl || null;
+            uploadedMediaData = item.mediaUrl || null;
+            uploadedPosterData = item.posterUrl || null;
 
             document.getElementById('formMediaUrl').value = item.mediaUrl || '';
             document.getElementById('formPosterUrl').value = item.posterUrl || '';
-
             document.getElementById('formTranscription').value = item.transcription || '';
 
             const addModal = document.getElementById('addModal');
@@ -838,7 +842,6 @@
             showToast(`Ниша "${removed}" удалена`);
         };
 
-        // Switch Upload Input Modes (URL vs File)
         function setupMediaInputSwitchers() {
             const mediaTypeUrlBtn = document.getElementById('mediaTypeUrlBtn');
             const mediaTypeFileBtn = document.getElementById('mediaTypeFileBtn');
@@ -878,7 +881,7 @@
                 posterUrlBox.classList.add('hidden');
             });
 
-            // Local File Reading logic
+            // Reliable File Reader
             const formMediaFile = document.getElementById('formMediaFile');
             const mediaFileName = document.getElementById('mediaFileName');
             formMediaFile.addEventListener('change', (e) => {
@@ -887,7 +890,7 @@
                     mediaFileName.textContent = `Выбран: ${file.name}`;
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        uploadedMediaBase64 = event.target.result;
+                        uploadedMediaData = event.target.result;
                     };
                     reader.readAsDataURL(file);
                 }
@@ -901,14 +904,13 @@
                     posterFileName.textContent = `Выбран: ${file.name}`;
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        uploadedPosterBase64 = event.target.result;
+                        uploadedPosterData = event.target.result;
                     };
                     reader.readAsDataURL(file);
                 }
             });
         }
 
-        // DOM Event Listeners
         document.addEventListener('DOMContentLoaded', () => {
             setupMediaInputSwitchers();
 
@@ -934,7 +936,6 @@
                 renderAnalytics();
             });
 
-            // Save & Share Link Button
             document.getElementById('saveAndShareBtn').addEventListener('click', () => {
                 try {
                     window.saveData();
@@ -954,7 +955,6 @@
                 }
             });
 
-            // Funnel Tabs
             const funnelTabs = document.getElementById('funnelTabs');
             funnelTabs.addEventListener('click', (e) => {
                 const btn = e.target.closest('.tab-btn');
@@ -971,7 +971,6 @@
                 renderCreatives();
             });
 
-            // Search
             const searchInput = document.getElementById('searchInput');
             const clearSearchBtn = document.getElementById('clearSearchBtn');
             searchInput.addEventListener('input', (e) => {
@@ -988,7 +987,6 @@
                 renderCreatives();
             });
 
-            // Dynamic Niche Pills Click
             const nichePillContainer = document.getElementById('nichePillContainer');
             nichePillContainer.addEventListener('click', (e) => {
                 const pill = e.target.closest('.niche-pill');
@@ -998,7 +996,6 @@
                 renderCreatives();
             });
 
-            // Reset Filters
             document.getElementById('resetFiltersBtn').addEventListener('click', () => {
                 window.activeFunnel = 'all';
                 window.activeCategory = 'all';
@@ -1016,12 +1013,10 @@
                 renderCreatives();
             });
 
-            // Theme Switcher
             document.getElementById('themeToggleBtn').addEventListener('click', () => {
                 document.documentElement.classList.toggle('dark');
             });
 
-            // Modals
             const addModal = document.getElementById('addModal');
             const addCreativeBtn = document.getElementById('addCreativeBtn');
             const closeModalBtn = document.getElementById('closeModalBtn');
@@ -1033,10 +1028,10 @@
                 document.getElementById('modalTitle').textContent = 'Добавить креатив';
                 document.getElementById('formEditingId').value = '';
                 addCreativeForm.reset();
-                uploadedMediaBase64 = null;
-                uploadedPosterBase64 = null;
-                document.getElementById('mediaFileName').textContent = 'Выберите файл на ноутбуке';
-                document.getElementById('posterFileName').textContent = 'Выберите обложку на ноутбуке';
+                uploadedMediaData = null;
+                uploadedPosterData = null;
+                document.getElementById('mediaFileName').textContent = 'Выберите файл с компьютера / телефона';
+                document.getElementById('posterFileName').textContent = 'Выберите обложку';
                 document.getElementById('mediaTypeUrlBtn').click();
                 document.getElementById('posterTypeUrlBtn').click();
                 document.getElementById('quickAddNicheContainer').classList.add('hidden');
@@ -1050,8 +1045,8 @@
                     addModal.classList.add('hidden');
                     addCreativeForm.reset();
                     document.getElementById('formEditingId').value = '';
-                    uploadedMediaBase64 = null;
-                    uploadedPosterBase64 = null;
+                    uploadedMediaData = null;
+                    uploadedPosterData = null;
                     document.getElementById('quickAddNicheContainer').classList.add('hidden');
                 }, 200);
             }
@@ -1079,13 +1074,11 @@
                 const formatVal = document.getElementById('formFormat').value;
                 const orientationVal = document.getElementById('formOrientation').value;
                 
-                // Determine Media Source (File upload Base64 vs Input URL)
                 const isMediaFileMode = !document.getElementById('mediaFileBox').classList.contains('hidden');
-                const mediaUrlVal = isMediaFileMode ? uploadedMediaBase64 : document.getElementById('formMediaUrl').value;
+                const mediaUrlVal = isMediaFileMode ? uploadedMediaData : document.getElementById('formMediaUrl').value;
 
-                // Determine Poster Source
                 const isPosterFileMode = !document.getElementById('posterFileBox').classList.contains('hidden');
-                const posterUrlVal = isPosterFileMode ? uploadedPosterBase64 : document.getElementById('formPosterUrl').value;
+                const posterUrlVal = isPosterFileMode ? uploadedPosterData : document.getElementById('formPosterUrl').value;
 
                 const transcriptionVal = document.getElementById('formTranscription').value;
 
@@ -1128,7 +1121,6 @@
                 closeAddModal();
             });
 
-            // Quick Add Niche Input Trigger
             document.getElementById('formCategory').addEventListener('change', (e) => {
                 const container = document.getElementById('quickAddNicheContainer');
                 if (e.target.value === '__NEW_NICHE__') {
@@ -1156,7 +1148,6 @@
                 document.getElementById('quickAddNicheContainer').classList.add('hidden');
             });
 
-            // Niche Modal
             const nicheModal = document.getElementById('nicheModal');
             const addNicheBtn = document.getElementById('addNicheBtn');
             const closeNicheModalBtn = document.getElementById('closeNicheModalBtn');
@@ -1195,7 +1186,6 @@
                 showToast(`Ниша "${val}" добавлена!`);
             });
 
-            // Delete Modal
             const deleteModal = document.getElementById('deleteModal');
             const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
             const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
@@ -1220,11 +1210,9 @@
                 }
             });
 
-            // Initial render
             window.renderApp();
         });
 
-        // Firebase Cloud Async Setup
         if (firebaseConfig) {
             try {
                 const app = initializeApp(firebaseConfig);
@@ -1255,7 +1243,6 @@
                     window.saveData();
                 }
 
-                // Live Sync
                 onSnapshot(cloudDocRef, (snapshot) => {
                     if (snapshot.exists()) {
                         const data = snapshot.data();
