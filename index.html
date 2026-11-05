@@ -384,7 +384,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global State Defaults
         const defaultCategories = [
@@ -395,9 +395,10 @@
             'Курсы & Образование'
         ];
 
+        // Full restored list of initial media creatives (Videos & Photos)
         const initialCreatives = [
             {
-                id: '1',
+                id: 'demo-creative-1',
                 title: '3 Ошибки в утреннем уходе, которые портят кожу',
                 funnel: 'free',
                 category: 'Beauty & Уход',
@@ -409,7 +410,7 @@
                 transcription: 'Хватит умываться горячей водой по утрам! Это первая причина сухой кожи. Вторая ошибка — вы наносите сыворотку прямо из пипетки на лицо, касаясь кожи стеклом. Третья — отсутствие SPF. Хочешь гайд по правильному уходу? Пиши слово "УХОД" в комментарии и забирай чек-лист!'
             },
             {
-                id: '2',
+                id: 'demo-creative-2',
                 title: 'Разбор воронки на 1 000 000₽ через Reels без рекламы',
                 funnel: 'free',
                 category: 'Экспертные блоги',
@@ -421,32 +422,44 @@
                 transcription: 'Как получать по 30 целевых заявок в день с помощью простых видео? Я собрал связку из 3 элементов: Цепляющий хук в первые 2 секунды, разбор частой боли вашей аудитории и автоматическое кодовое слово в директ. Посмотри мой бесплатный 10-минутный разбор по ссылке!'
             },
             {
-                id: '3',
+                id: 'demo-creative-3',
                 title: 'Закрытый мастер-класс: Продажи через сторис 2.0',
                 funnel: 'paid',
                 category: 'Курсы & Образование',
                 format: 'video',
                 orientation: 'vertical',
-                mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+                mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
                 posterUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
                 views: '8.4K',
                 transcription: 'Охваты падают, а клиенты не покупают? Приглашаю на практический онлайн мастер-класс. За 2 часа покажем реальные кейсы внедрения сюжетных линий. Билет стоит всего 990 рублей. Жми на кнопку под видео и бронируй место.'
             },
             {
-                id: '4',
+                id: 'demo-creative-4',
                 title: 'Анатомический коврик для йоги с нескользящим покрытием',
                 funnel: 'paid',
                 category: 'E-commerce & Товары',
                 format: 'static',
                 orientation: 'horizontal',
                 mediaUrl: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80',
-                posterUrl: '',
+                posterUrl: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80',
                 views: '32.1K',
                 transcription: 'Идеальное сцепление даже при интенсивных тренировках. Премиальный эко-материал. Скидка -30% только до конца недели. Заказывайте с бесплатной доставкой на маркетплейсах!'
+            },
+            {
+                id: 'demo-creative-5',
+                title: 'Как сжечь жир на животе без жестких диет за 21 день',
+                funnel: 'free',
+                category: 'Фитнес & Здоровье',
+                format: 'video',
+                orientation: 'vertical',
+                mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+                posterUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80',
+                views: '94.0K',
+                transcription: 'Перестань делать скручивания на пресс! Это не помогает убрать жир. Главное — это дефицит калорий и удержание белка. Я разработала бесплатную программу питания и коротких тренировок на 3 недели. Переходи в бота и скачивай меню!'
             }
         ];
 
-        // Safe Storage Recovery
+        // Safe Storage Recovery with Merge Guard
         let savedCats = null;
         let savedCreats = null;
         try {
@@ -454,8 +467,18 @@
             savedCreats = JSON.parse(localStorage.getItem('analytics_creatives'));
         } catch(e) {}
 
+        // Helper to merge lists while preserving unique IDs
+        function mergeCreativesLists(base, incoming) {
+            const map = new Map();
+            base.forEach(item => map.set(item.id, item));
+            incoming.forEach(item => map.set(item.id, item));
+            return Array.from(map.values());
+        }
+
         window.categories = (savedCats && Array.isArray(savedCats) && savedCats.length > 0) ? savedCats : defaultCategories;
-        window.creatives = (savedCreats && Array.isArray(savedCreats) && savedCreats.length > 0) ? savedCreats : initialCreatives;
+        window.creatives = (savedCreats && Array.isArray(savedCreats) && savedCreats.length > 0) 
+            ? mergeCreativesLists(initialCreatives, savedCreats) 
+            : initialCreatives;
 
         window.currentView = 'library';
         window.activeFunnel = 'all';
@@ -463,7 +486,7 @@
         window.searchQuery = '';
         window.creativeToDeleteId = null;
 
-        // Cloud Storage Setup
+        // Shared Storage App Identification Key
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'creatives-db-shared-app';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         let db = null;
@@ -566,7 +589,6 @@
                 const isVideo = item.format === 'video';
                 const isVertical = item.orientation === 'vertical';
                 
-                // Fallback media links if missing or broken
                 const defaultVideo = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
                 const defaultPoster = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80';
                 
@@ -975,7 +997,7 @@
                     showToast("Креатив обновлен!");
                 } else {
                     const newCreative = {
-                        id: Date.now().toString(),
+                        id: 'c-' + Date.now().toString() + '-' + Math.random().toString(36).substr(2, 5),
                         title: titleVal,
                         funnel: funnelVal,
                         format: formatVal,
@@ -1110,25 +1132,38 @@
                 if (statusEl) statusEl.classList.remove('hidden');
 
                 const cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
+                
+                // Fetch latest state on load to avoid overwriting remote content
+                const snapshotInitial = await getDoc(cloudDocRef);
+                if (snapshotInitial.exists()) {
+                    const data = snapshotInitial.data();
+                    if (data.categories && Array.isArray(data.categories)) {
+                        window.categories = data.categories;
+                    }
+                    if (data.creatives && Array.isArray(data.creatives) && data.creatives.length > 0) {
+                        window.creatives = mergeCreativesLists(initialCreatives, data.creatives);
+                    } else {
+                        window.creatives = mergeCreativesLists(initialCreatives, window.creatives);
+                    }
+                    saveLocal();
+                    window.renderApp();
+                } else {
+                    window.saveData();
+                }
+
+                // Live Sync
                 onSnapshot(cloudDocRef, (snapshot) => {
                     if (snapshot.exists()) {
                         const data = snapshot.data();
                         if (data.categories && Array.isArray(data.categories)) {
-                            window.categories = Array.from(new Set([...window.categories, ...data.categories]));
+                            window.categories = data.categories;
                         }
-                        if (data.creatives && Array.isArray(data.creatives)) {
-                            const map = new Map();
-                            data.creatives.forEach(item => map.set(item.id, item));
-                            window.creatives.forEach(item => {
-                                if (!map.has(item.id)) map.set(item.id, item);
-                            });
-                            window.creatives = Array.from(map.values());
+                        if (data.creatives && Array.isArray(data.creatives) && data.creatives.length > 0) {
+                            window.creatives = mergeCreativesLists(initialCreatives, data.creatives);
                         }
                         saveLocal();
-                    } else {
-                        window.saveData();
+                        window.renderApp();
                     }
-                    window.renderApp();
                 }, (error) => {
                     console.warn("Cloud live sync error:", error);
                 });
