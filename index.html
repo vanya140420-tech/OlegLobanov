@@ -68,12 +68,6 @@
                         Аналитика
                     </button>
                 </div>
-
-                <!-- Cloud Sync Status Indicator -->
-                <div id="syncStatus" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-[11px]">
-                    <i data-lucide="cloud-check" class="w-3.5 h-3.5"></i>
-                    <span>Облако подключено</span>
-                </div>
             </div>
 
             <!-- Global Search Bar -->
@@ -90,6 +84,11 @@
 
             <!-- Action Buttons -->
             <div class="flex items-center space-x-2">
+                <!-- Main Save & Share Button -->
+                <button id="saveAndShareBtn" class="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-95" title="Сохранить изменения и получить ссылку для друга">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    Сохранить и поделиться
+                </button>
                 <button id="addNicheBtn" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-slate-800 dark:bg-slate-800 bg-white hover:bg-slate-700 dark:hover:bg-slate-700 hover:bg-slate-100 text-slate-200 dark:text-slate-200 text-slate-800 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl transition-all">
                     <i data-lucide="folder-plus" class="w-4 h-4 text-blue-500"></i>
                     + Ниша
@@ -146,7 +145,7 @@
                     <i data-lucide="search-x" class="w-6 h-6"></i>
                 </div>
                 <p class="text-base font-semibold text-slate-300 dark:text-slate-300 text-slate-700">Ничего не найдено</p>
-                <p class="text-xs text-slate-500 max-w-sm mx-auto">Попробуйте изменить поисковый запрос или сбросить фильтры.</p>
+                <p class="text-xs text-slate-500 max-w-sm mx-auto">Добавьте первый креатив или нажмите кнопку «Добавить медиа».</p>
                 <button id="resetFiltersBtn" class="mt-2 px-4 py-2 text-xs font-semibold bg-slate-900 dark:bg-slate-900 bg-slate-200 hover:bg-slate-800 dark:hover:bg-slate-800 text-blue-500 border border-slate-800 dark:border-slate-800 border-slate-300 rounded-xl transition-all">
                     Сбросить все фильтры
                 </button>
@@ -380,13 +379,13 @@
         <span id="toastMsg">Успешно!</span>
     </div>
 
-    <!-- Unified Single Script (No Module Conflicts) -->
+    <!-- Unified Single Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global State Defaults
+        // Default Categories Template
         const defaultCategories = [
             'Beauty & Уход',
             'Экспертные блоги',
@@ -395,90 +394,44 @@
             'Курсы & Образование'
         ];
 
-        // Full restored list of initial media creatives (Videos & Photos)
-        const initialCreatives = [
-            {
-                id: 'demo-creative-1',
-                title: '3 Ошибки в утреннем уходе, которые портят кожу',
-                funnel: 'free',
-                category: 'Beauty & Уход',
-                format: 'video',
-                orientation: 'vertical',
-                mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-                posterUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
-                views: '45.2K',
-                transcription: 'Хватит умываться горячей водой по утрам! Это первая причина сухой кожи. Вторая ошибка — вы наносите сыворотку прямо из пипетки на лицо, касаясь кожи стеклом. Третья — отсутствие SPF. Хочешь гайд по правильному уходу? Пиши слово "УХОД" в комментарии и забирай чек-лист!'
-            },
-            {
-                id: 'demo-creative-2',
-                title: 'Разбор воронки на 1 000 000₽ через Reels без рекламы',
-                funnel: 'free',
-                category: 'Экспертные блоги',
-                format: 'video',
-                orientation: 'horizontal',
-                mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-                posterUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80',
-                views: '128.9K',
-                transcription: 'Как получать по 30 целевых заявок в день с помощью простых видео? Я собрал связку из 3 элементов: Цепляющий хук в первые 2 секунды, разбор частой боли вашей аудитории и автоматическое кодовое слово в директ. Посмотри мой бесплатный 10-минутный разбор по ссылке!'
-            },
-            {
-                id: 'demo-creative-3',
-                title: 'Закрытый мастер-класс: Продажи через сторис 2.0',
-                funnel: 'paid',
-                category: 'Курсы & Образование',
-                format: 'video',
-                orientation: 'vertical',
-                mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-                posterUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
-                views: '8.4K',
-                transcription: 'Охваты падают, а клиенты не покупают? Приглашаю на практический онлайн мастер-класс. За 2 часа покажем реальные кейсы внедрения сюжетных линий. Билет стоит всего 990 рублей. Жми на кнопку под видео и бронируй место.'
-            },
-            {
-                id: 'demo-creative-4',
-                title: 'Анатомический коврик для йоги с нескользящим покрытием',
-                funnel: 'paid',
-                category: 'E-commerce & Товары',
-                format: 'static',
-                orientation: 'horizontal',
-                mediaUrl: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80',
-                posterUrl: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80',
-                views: '32.1K',
-                transcription: 'Идеальное сцепление даже при интенсивных тренировках. Премиальный эко-материал. Скидка -30% только до конца недели. Заказывайте с бесплатной доставкой на маркетплейсах!'
-            },
-            {
-                id: 'demo-creative-5',
-                title: 'Как сжечь жир на животе без жестких диет за 21 день',
-                funnel: 'free',
-                category: 'Фитнес & Здоровье',
-                format: 'video',
-                orientation: 'vertical',
-                mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-                posterUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80',
-                views: '94.0K',
-                transcription: 'Перестань делать скручивания на пресс! Это не помогает убрать жир. Главное — это дефицит калорий и удержание белка. Я разработала бесплатную программу питания и коротких тренировок на 3 недели. Переходи в бота и скачивай меню!'
+        // Clean initial state (no dummy demo clutter, starts completely user-ready)
+        const defaultCreatives = [];
+
+        // Safe Storage & Shareable URL Parser
+        function loadInitialState() {
+            // Priority 1: Read URL Hash payload (when you send the link to a friend)
+            try {
+                if (window.location.hash && window.location.hash.startsWith('#data=')) {
+                    const encoded = window.location.hash.substring(6);
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+                    if (decoded && Array.isArray(decoded.creatives)) {
+                        return {
+                            categories: decoded.categories || defaultCategories,
+                            creatives: decoded.creatives
+                        };
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not parse shared link hash:", e);
             }
-        ];
 
-        // Safe Storage Recovery with Merge Guard
-        let savedCats = null;
-        let savedCreats = null;
-        try {
-            savedCats = JSON.parse(localStorage.getItem('analytics_categories'));
-            savedCreats = JSON.parse(localStorage.getItem('analytics_creatives'));
-        } catch(e) {}
+            // Priority 2: Read Local Storage
+            let savedCats = null;
+            let savedCreats = null;
+            try {
+                savedCats = JSON.parse(localStorage.getItem('analytics_categories'));
+                savedCreats = JSON.parse(localStorage.getItem('analytics_creatives'));
+            } catch(e) {}
 
-        // Helper to merge lists while preserving unique IDs
-        function mergeCreativesLists(base, incoming) {
-            const map = new Map();
-            base.forEach(item => map.set(item.id, item));
-            incoming.forEach(item => map.set(item.id, item));
-            return Array.from(map.values());
+            return {
+                categories: (savedCats && Array.isArray(savedCats) && savedCats.length > 0) ? savedCats : defaultCategories,
+                creatives: (savedCreats && Array.isArray(savedCreats)) ? savedCreats : defaultCreatives
+            };
         }
 
-        window.categories = (savedCats && Array.isArray(savedCats) && savedCats.length > 0) ? savedCats : defaultCategories;
-        window.creatives = (savedCreats && Array.isArray(savedCreats) && savedCreats.length > 0) 
-            ? mergeCreativesLists(initialCreatives, savedCreats) 
-            : initialCreatives;
+        const initialState = loadInitialState();
+        window.categories = initialState.categories;
+        window.creatives = initialState.creatives;
 
         window.currentView = 'library';
         window.activeFunnel = 'all';
@@ -486,8 +439,8 @@
         window.searchQuery = '';
         window.creativeToDeleteId = null;
 
-        // Shared Storage App Identification Key
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'creatives-db-shared-app';
+        // Shared Storage Identification Key
+        const appId = 'shared-creatives-global-v1';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         let db = null;
         let isCloud = false;
@@ -762,7 +715,7 @@
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
             }
-            showToast("Текст скопирован!");
+            showToast("Ссылка скопирована!");
         };
 
         function showToast(msg) {
@@ -835,7 +788,7 @@
             showToast(`Ниша "${removed}" удалена`);
         };
 
-        // DOM Ready Bindings
+        // DOM Event Listeners
         document.addEventListener('DOMContentLoaded', () => {
             const viewLibraryBtn = document.getElementById('viewLibraryBtn');
             const viewAnalyticsBtn = document.getElementById('viewAnalyticsBtn');
@@ -857,6 +810,26 @@
                 viewAnalyticsBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 bg-blue-600 text-white transition-all shadow";
                 viewLibraryBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 dark:text-slate-400 text-slate-700 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 transition-all";
                 renderAnalytics();
+            });
+
+            // Save & Share Link Button (Replaces import/export)
+            document.getElementById('saveAndShareBtn').addEventListener('click', () => {
+                try {
+                    window.saveData();
+                    const payload = {
+                        categories: window.categories,
+                        creatives: window.creatives
+                    };
+                    const jsonStr = JSON.stringify(payload);
+                    const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+                    const shareableUrl = `${window.location.origin}${window.location.pathname}#data=${encoded}`;
+                    
+                    window.copyText(document.getElementById('saveAndShareBtn'), shareableUrl);
+                    showToast("Сохранено! Ссылка для друга скопирована в буфер обмена.");
+                } catch (err) {
+                    console.error("Error creating save link:", err);
+                    showToast("Ошибка при создании ссылки сохранения!");
+                }
             });
 
             // Funnel Tabs
@@ -1128,9 +1101,6 @@
                 }
 
                 isCloud = true;
-                const statusEl = document.getElementById('syncStatus');
-                if (statusEl) statusEl.classList.remove('hidden');
-
                 const cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
                 
                 // Fetch latest state on load to avoid overwriting remote content
@@ -1140,10 +1110,8 @@
                     if (data.categories && Array.isArray(data.categories)) {
                         window.categories = data.categories;
                     }
-                    if (data.creatives && Array.isArray(data.creatives) && data.creatives.length > 0) {
-                        window.creatives = mergeCreativesLists(initialCreatives, data.creatives);
-                    } else {
-                        window.creatives = mergeCreativesLists(initialCreatives, window.creatives);
+                    if (data.creatives && Array.isArray(data.creatives)) {
+                        window.creatives = data.creatives;
                     }
                     saveLocal();
                     window.renderApp();
@@ -1158,8 +1126,8 @@
                         if (data.categories && Array.isArray(data.categories)) {
                             window.categories = data.categories;
                         }
-                        if (data.creatives && Array.isArray(data.creatives) && data.creatives.length > 0) {
-                            window.creatives = mergeCreativesLists(initialCreatives, data.creatives);
+                        if (data.creatives && Array.isArray(data.creatives)) {
+                            window.creatives = data.creatives;
                         }
                         saveLocal();
                         window.renderApp();
