@@ -403,7 +403,7 @@
                 category: 'Beauty & Уход',
                 format: 'video',
                 orientation: 'vertical',
-                mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-woman-applying-face-cream-41584-large.mp4',
+                mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
                 posterUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
                 views: '45.2K',
                 transcription: 'Хватит умываться горячей водой по утрам! Это первая причина сухой кожи. Вторая ошибка — вы наносите сыворотку прямо из пипетки на лицо, касаясь кожи стеклом. Третья — отсутствие SPF. Хочешь гайд по правильному уходу? Пиши слово "УХОД" в комментарии и забирай чек-лист!'
@@ -415,7 +415,7 @@
                 category: 'Экспертные блоги',
                 format: 'video',
                 orientation: 'horizontal',
-                mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-young-woman-working-on-laptop-42828-large.mp4',
+                mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
                 posterUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80',
                 views: '128.9K',
                 transcription: 'Как получать по 30 целевых заявок в день с помощью простых видео? Я собрал связку из 3 элементов: Цепляющий хук в первые 2 секунды, разбор частой боли вашей аудитории и автоматическое кодовое слово в директ. Посмотри мой бесплатный 10-минутный разбор по ссылке!'
@@ -427,7 +427,7 @@
                 category: 'Курсы & Образование',
                 format: 'video',
                 orientation: 'vertical',
-                mediaUrl: 'https://assets.mixkit.co/videos/preview/mixkit-working-overtime-in-a-clean-office-43029-large.mp4',
+                mediaUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
                 posterUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
                 views: '8.4K',
                 transcription: 'Охваты падают, а клиенты не покупают? Приглашаю на практический онлайн мастер-класс. За 2 часа покажем реальные кейсы внедрения сюжетных линий. Билет стоит всего 990 рублей. Жми на кнопку под видео и бронируй место.'
@@ -565,8 +565,13 @@
                 const isPaid = item.funnel === 'paid';
                 const isVideo = item.format === 'video';
                 const isVertical = item.orientation === 'vertical';
-                const mediaSrc = item.mediaUrl || (isVideo ? 'https://assets.mixkit.co/videos/preview/mixkit-woman-applying-face-cream-41584-large.mp4' : 'https://placehold.co/600x337/1e293b/94a3b8?text=Превью+Фото');
-                const posterSrc = item.posterUrl || '';
+                
+                // Fallback media links if missing or broken
+                const defaultVideo = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+                const defaultPoster = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80';
+                
+                const mediaSrc = item.mediaUrl || (isVideo ? defaultVideo : 'https://placehold.co/600x337/1e293b/94a3b8?text=Изображение');
+                const posterSrc = item.posterUrl || (isVideo ? defaultPoster : '');
                 const aspectClass = isVertical ? 'aspect-[9/16] max-h-[480px]' : 'aspect-[16/9]';
 
                 return `
@@ -574,7 +579,7 @@
                         
                         <div class="relative ${aspectClass} bg-slate-950 border-b border-slate-800 dark:border-slate-800 border-slate-200 overflow-hidden flex items-center justify-center">
                             ${isVideo ? `
-                                <video src="${mediaSrc}" ${posterSrc ? `poster="${posterSrc}"` : ''} controls class="w-full h-full object-cover" preload="metadata"></video>
+                                <video src="${mediaSrc}" poster="${posterSrc}" controls playsinline preload="auto" class="w-full h-full object-cover"></video>
                             ` : `
                                 <img src="${mediaSrc}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x337/1e293b/94a3b8?text=Изображение'">
                             `}
