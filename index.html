@@ -418,7 +418,7 @@
     <!-- Script Block -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Configuration Slot
@@ -476,7 +476,7 @@
         window.searchQuery = '';
         window.creativeToDeleteId = null;
 
-        const appId = 'shared-creatives-global-v1';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'shared-creatives-global-v1';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myCustomFirebaseConfig;
         let db = null;
         let isCloud = false;
@@ -557,19 +557,36 @@
             });
         }
 
-        // Robust cross-browser player error handler
+        // Robust cross-browser player error handler & format normalizer
         window.handleVideoError = function(videoEl, rawSrc) {
-            const container = videoEl.parentElement;
-            if (!container) return;
-            container.innerHTML = `
-                <div class="relative w-full h-full bg-slate-950 flex flex-col items-center justify-center p-2">
-                    <video src="${rawSrc}" controls playsinline preload="auto" class="w-full h-full object-contain"></video>
-                    <div class="absolute top-2 right-2 bg-slate-900/90 text-amber-400 px-2 py-0.5 rounded text-[10px] border border-amber-500/30">
-                        Универсальный режим воспроизведения
-                    </div>
-                </div>
-            `;
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+            if (videoEl.getAttribute('data-error-handled')) return;
+            videoEl.setAttribute('data-error-handled', 'true');
+            
+            // Try fallback using Blob stream if it's base64 data
+            if (rawSrc.startsWith('data:')) {
+                try {
+                    const parts = rawSrc.split(';base64,');
+                    const contentType = parts[0].split(':')[1] || 'video/mp4';
+                    const raw = window.atob(parts[1]);
+                    const rawLength = raw.length;
+                    const uInt8Array = new Uint8Array(rawLength);
+                    for (let i = 0; i < rawLength; ++i) {
+                        uInt8Array[i] = raw.charCodeAt(i);
+                    }
+                    const blob = new Blob([uInt8Array], { type: contentType });
+                    const blobUrl = URL.createObjectURL(blob);
+                    videoEl.src = blobUrl;
+                    videoEl.load();
+                    videoEl.play().catch(() => {});
+                    return;
+                } catch(e) {
+                    console.error("Blob fallback failed", e);
+                }
+            }
+
+            // Reload plain source directly
+            videoEl.src = rawSrc;
+            videoEl.load();
         };
 
         function renderCreatives() {
@@ -610,11 +627,11 @@
                                     ${posterSrc ? `poster="${posterSrc}"` : ''} 
                                     controls 
                                     playsinline 
-                                    preload="metadata" 
+                                    webkit-playsinline
+                                    preload="metadata"
                                     onerror="handleVideoError(this, '${escapeJsString(mediaSrc)}')" 
                                     class="w-full h-full object-cover transition-all duration-300 group-hover:scale-[1.01]"
                                 >
-                                    <source src="${mediaSrc}">
                                 </video>
                             ` : `
                                 <img src="${mediaSrc}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x337/1e293b/94a3b8?text=Изображение'">
@@ -886,23 +903,24 @@
                 posterUrlBox.classList.add('hidden');
             });
 
-            // Enhanced File Reader with Format Safeguards
+            // Enhanced File Reader with Automatic MIME/Container Detection
             const formMediaFile = document.getElementById('formMediaFile');
             const mediaFileName = document.getElementById('mediaFileName');
             formMediaFile.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (file) {
                     mediaFileName.textContent = `Выбран: ${file.name}`;
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        let res = event.target.result;
-                        // Guarantee correct MIME header fallback for binary uploads
-                        if (res.startsWith('data:application/octet-stream') || res.startsWith('data:video/x-matroska')) {
-                            res = res.replace(/^data:[^;]+;/, 'data:video/mp4;');
-                        }
-                        uploadedMediaData = res;
-                    };
-                    reader.readAsDataURL(file);
+                    
+                    // Create direct Blob Object URL for instant, zero-loss video streaming
+                    if (file.type.startsWith('video/') || file.name.match(/\.(mp4|mov|webm|mkv|avi|m4v)$/i)) {
+                        uploadedMediaData = URL.createObjectURL(file);
+                    } else {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            uploadedMediaData = event.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
                 }
             });
 
@@ -1216,7 +1234,12 @@
                 const auth = getAuth(app);
                 db = getFirestore(app);
 
-                await signInAnonymously(auth);
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
 
                 isCloud = true;
                 const cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
