@@ -84,10 +84,16 @@
 
             <!-- Action Buttons -->
             <div class="flex items-center space-x-2">
-                <button id="saveAndShareBtn" class="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-95" title="Сохранить базу в облако для доступа с любых устройств">
+                <button id="saveAndShareBtn" class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-95" title="Сохранить в облако Firebase и синхронизировать">
                     <i data-lucide="cloud-upload" class="w-4 h-4"></i>
                     Сохранить в Облако
                 </button>
+
+                <button id="copySiteUrlBtn" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-slate-800 dark:bg-slate-800 bg-white hover:bg-slate-700 dark:hover:bg-slate-700 text-slate-200 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl transition-all" title="Скопировать ссылку на сайт для кента">
+                    <i data-lucide="link" class="w-4 h-4 text-blue-400"></i>
+                    Ссылка на сайт
+                </button>
+
                 <button id="addNicheBtn" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-slate-800 dark:bg-slate-800 bg-white hover:bg-slate-700 dark:hover:bg-slate-700 hover:bg-slate-100 text-slate-200 dark:text-slate-200 text-slate-800 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl transition-all">
                     <i data-lucide="folder-plus" class="w-4 h-4 text-blue-500"></i>
                     + Ниша
@@ -421,8 +427,29 @@
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Configuration Slot
-        const myCustomFirebaseConfig = null;
+        // =========================================================================
+        // ⚙️ ТВОИ ВСТАВЛЕННЫЕ ДАННЫЕ ИЗ FIREBASE (PROJECT: saitaaaa):
+        // =========================================================================
+        const myCustomFirebaseConfig = {
+            apiKey: "AIzaSyBOvBJl3ftoA-185RFuN3QFkpksEVqad5o",
+            authDomain: "saitaaaa.firebaseapp.com",
+            projectId: "saitaaaa",
+            storageBucket: "saitaaaa.firebasestorage.app",
+            messagingSenderId: "193388237446",
+            appId: "1:193388237446:web:bf43acd550157d04bb7707",
+            measurementId: "G-R31S7D36X9"
+        };
+        // =========================================================================
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-creatives-shared-db';
+        
+        const firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) 
+            ? JSON.parse(__firebase_config) 
+            : (myCustomFirebaseConfig.apiKey !== "ВСТАВЬ_СВОЙ_API_KEY" ? myCustomFirebaseConfig : null);
+
+        let db = null;
+        let auth = null;
+        let isCloudActive = false;
 
         const defaultCategories = [
             'Beauty & Уход',
@@ -438,21 +465,6 @@
         let uploadedPosterData = null;
 
         function loadInitialState() {
-            try {
-                if (window.location.hash && window.location.hash.startsWith('#data=')) {
-                    const encoded = window.location.hash.substring(6);
-                    const decoded = JSON.parse(decodeURIComponent(escape(atob(encoded))));
-                    if (decoded && Array.isArray(decoded.creatives)) {
-                        return {
-                            categories: decoded.categories || defaultCategories,
-                            creatives: decoded.creatives
-                        };
-                    }
-                }
-            } catch (e) {
-                console.warn("Could not parse shared hash:", e);
-            }
-
             let savedCats = null;
             let savedCreats = null;
             try {
@@ -476,35 +488,83 @@
         window.searchQuery = '';
         window.creativeToDeleteId = null;
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'shared-creatives-global-v1';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myCustomFirebaseConfig;
-        let db = null;
-        let isCloud = false;
-
         function saveLocal() {
             try {
                 localStorage.setItem('analytics_categories', JSON.stringify(window.categories));
                 localStorage.setItem('analytics_creatives', JSON.stringify(window.creatives));
             } catch(e) {
-                console.warn("Storage quota exceeded or storage disabled:", e);
+                console.warn("Storage error:", e);
             }
         }
 
         window.saveData = async function() {
             saveLocal();
-            if (isCloud && db) {
+            
+            if (isCloudActive && db) {
                 try {
                     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
                     await setDoc(docRef, {
                         categories: window.categories,
                         creatives: window.creatives,
                         updatedAt: Date.now()
-                    });
+                    }, { merge: true });
+                    return true;
                 } catch(e) {
-                    console.warn("Cloud save error:", e);
+                    console.error("Firebase Cloud Save Error:", e);
+                    return false;
                 }
             }
+            return false;
         };
+
+        async function initFirebaseCloud() {
+            if (!firebaseConfig) {
+                console.log("⚠️ Firebase не настроен. Для включения вставьте ключи в myCustomFirebaseConfig!");
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                isCloudActive = true;
+                const cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
+
+                const snapshotInitial = await getDoc(cloudDocRef);
+                if (snapshotInitial.exists()) {
+                    const data = snapshotInitial.data();
+                    if (data.categories && Array.isArray(data.categories)) window.categories = data.categories;
+                    if (data.creatives && Array.isArray(data.creatives)) window.creatives = data.creatives;
+                    saveLocal();
+                    window.renderApp();
+                } else {
+                    await window.saveData();
+                }
+
+                onSnapshot(cloudDocRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.data();
+                        if (data.categories && Array.isArray(data.categories)) window.categories = data.categories;
+                        if (data.creatives && Array.isArray(data.creatives)) window.creatives = data.creatives;
+                        saveLocal();
+                        window.renderApp();
+                    }
+                }, (error) => {
+                    console.warn("Firebase snapshot error:", error);
+                });
+
+            } catch(err) {
+                console.error("Firebase Auth/Init failure:", err);
+            }
+        }
 
         window.renderApp = function() {
             renderCategoryPills();
@@ -557,12 +617,10 @@
             });
         }
 
-        // Robust cross-browser player error handler & format normalizer
         window.handleVideoError = function(videoEl, rawSrc) {
             if (videoEl.getAttribute('data-error-handled')) return;
             videoEl.setAttribute('data-error-handled', 'true');
             
-            // Try fallback using Blob stream if it's base64 data
             if (rawSrc.startsWith('data:')) {
                 try {
                     const parts = rawSrc.split(';base64,');
@@ -584,7 +642,6 @@
                 }
             }
 
-            // Reload plain source directly
             videoEl.src = rawSrc;
             videoEl.load();
         };
@@ -669,7 +726,7 @@
                                 </h3>
                             </div>
 
-                            <div class="bg-slate-950 dark:bg-slate-950 bg-slate-100 border border-slate-800 dark:border-slate-800 border-slate-300 rounded-xl p-3 flex flex-col space-y-2">
+                            <div class="bg-slate-950 dark:bg-slate-950 bg-slate-100 border border-slate-800 dark:border-slate-800 border-slate-200 rounded-xl p-3 flex flex-col space-y-2">
                                 <div class="flex items-center justify-between border-b border-slate-800 dark:border-slate-800 border-slate-200 pb-2">
                                     <span class="text-[11px] font-medium text-slate-400 dark:text-slate-400 text-slate-600 flex items-center gap-1.5">
                                         <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-500"></i> Транскрибация
@@ -903,7 +960,6 @@
                 posterUrlBox.classList.add('hidden');
             });
 
-            // Enhanced File Reader with Automatic MIME/Container Detection
             const formMediaFile = document.getElementById('formMediaFile');
             const mediaFileName = document.getElementById('mediaFileName');
             formMediaFile.addEventListener('change', (e) => {
@@ -914,7 +970,6 @@
                     const reader = new FileReader();
                     reader.onload = (event) => {
                         let res = event.target.result;
-                        // Ensure valid video MIME signature for cross-device playback
                         if (res.startsWith('data:application/octet-stream') || res.startsWith('data:video/x-matroska')) {
                             res = res.replace(/^data:[^;]+;/, 'data:video/mp4;');
                         }
@@ -939,8 +994,10 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             setupMediaInputSwitchers();
+
+            await initFirebaseCloud();
 
             const viewLibraryBtn = document.getElementById('viewLibraryBtn');
             const viewAnalyticsBtn = document.getElementById('viewAnalyticsBtn');
@@ -965,22 +1022,18 @@
             });
 
             document.getElementById('saveAndShareBtn').addEventListener('click', async () => {
-                try {
-                    await window.saveData();
-                    const payload = {
-                        categories: window.categories,
-                        creatives: window.creatives
-                    };
-                    const jsonStr = JSON.stringify(payload);
-                    const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
-                    const shareableUrl = `${window.location.origin}${window.location.pathname}#data=${encoded}`;
-                    
-                    window.copyText(document.getElementById('saveAndShareBtn'), shareableUrl);
-                    showToast("Сохранено в облако! Ссылка скопирована");
-                } catch (err) {
-                    console.error("Error creating save link:", err);
-                    showToast("Ошибка при сохранении!");
+                const success = await window.saveData();
+                if (success || !isCloudActive) {
+                    showToast("Сохранено в Облако! Все увидят обновления.");
+                } else {
+                    showToast("Ошибка сохранения в облако!");
                 }
+            });
+
+            document.getElementById('copySiteUrlBtn').addEventListener('click', () => {
+                const cleanUrl = window.location.origin + window.location.pathname;
+                window.copyText(document.getElementById('copySiteUrlBtn'), cleanUrl);
+                showToast("Ссылка на сайт скопирована! Скидывай кенту.");
             });
 
             const funnelTabs = document.getElementById('funnelTabs');
@@ -1067,7 +1120,7 @@
             }
 
             addCreativeBtn.addEventListener('click', openAddModal);
-            closeModalBtn.addEventListener('click', closeAddModal);
+            closeModalBtn.addEventListener('click', closeModalBtn);
             cancelModalBtn.addEventListener('click', closeAddModal);
 
             addCreativeForm.addEventListener('submit', (e) => {
@@ -1227,57 +1280,6 @@
 
             window.renderApp();
         });
-
-        if (firebaseConfig) {
-            try {
-                const app = initializeApp(firebaseConfig);
-                const auth = getAuth(app);
-                db = getFirestore(app);
-
-                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                isCloud = true;
-                const cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
-                
-                const snapshotInitial = await getDoc(cloudDocRef);
-                if (snapshotInitial.exists()) {
-                    const data = snapshotInitial.data();
-                    if (data.categories && Array.isArray(data.categories)) {
-                        window.categories = data.categories;
-                    }
-                    if (data.creatives && Array.isArray(data.creatives)) {
-                        window.creatives = data.creatives;
-                    }
-                    saveLocal();
-                    window.renderApp();
-                } else {
-                    window.saveData();
-                }
-
-                onSnapshot(cloudDocRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        const data = snapshot.data();
-                        if (data.categories && Array.isArray(data.categories)) {
-                            window.categories = data.categories;
-                        }
-                        if (data.creatives && Array.isArray(data.creatives)) {
-                            window.creatives = data.creatives;
-                        }
-                        saveLocal();
-                        window.renderApp();
-                    }
-                }, (error) => {
-                    console.warn("Cloud live sync error:", error);
-                });
-            } catch(e) {
-                console.warn("Firebase initialization skipped:", e);
-            }
-        }
     </script>
 </body>
 </html>
