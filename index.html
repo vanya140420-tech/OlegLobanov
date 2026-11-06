@@ -84,9 +84,9 @@
 
             <!-- Action Buttons -->
             <div class="flex items-center space-x-2">
-                <button id="saveAndShareBtn" class="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-95" title="Сохранить изменения и получить ссылку для друга">
-                    <i data-lucide="save" class="w-4 h-4"></i>
-                    Сохранить и поделиться
+                <button id="saveAndShareBtn" class="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-95" title="Сохранить базу в облако для доступа с любых устройств">
+                    <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+                    Сохранить в Облако
                 </button>
                 <button id="addNicheBtn" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-slate-800 dark:bg-slate-800 bg-white hover:bg-slate-700 dark:hover:bg-slate-700 hover:bg-slate-100 text-slate-200 dark:text-slate-200 text-slate-800 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl transition-all">
                     <i data-lucide="folder-plus" class="w-4 h-4 text-blue-500"></i>
@@ -911,16 +911,16 @@
                 if (file) {
                     mediaFileName.textContent = `Выбран: ${file.name}`;
                     
-                    // Create direct Blob Object URL for instant, zero-loss video streaming
-                    if (file.type.startsWith('video/') || file.name.match(/\.(mp4|mov|webm|mkv|avi|m4v)$/i)) {
-                        uploadedMediaData = URL.createObjectURL(file);
-                    } else {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                            uploadedMediaData = event.target.result;
-                        };
-                        reader.readAsDataURL(file);
-                    }
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        let res = event.target.result;
+                        // Ensure valid video MIME signature for cross-device playback
+                        if (res.startsWith('data:application/octet-stream') || res.startsWith('data:video/x-matroska')) {
+                            res = res.replace(/^data:[^;]+;/, 'data:video/mp4;');
+                        }
+                        uploadedMediaData = res;
+                    };
+                    reader.readAsDataURL(file);
                 }
             });
 
@@ -964,9 +964,9 @@
                 renderAnalytics();
             });
 
-            document.getElementById('saveAndShareBtn').addEventListener('click', () => {
+            document.getElementById('saveAndShareBtn').addEventListener('click', async () => {
                 try {
-                    window.saveData();
+                    await window.saveData();
                     const payload = {
                         categories: window.categories,
                         creatives: window.creatives
@@ -976,7 +976,7 @@
                     const shareableUrl = `${window.location.origin}${window.location.pathname}#data=${encoded}`;
                     
                     window.copyText(document.getElementById('saveAndShareBtn'), shareableUrl);
-                    showToast("Сохранено! Ссылка скопирована.");
+                    showToast("Сохранено в облако! Ссылка скопирована");
                 } catch (err) {
                     console.error("Error creating save link:", err);
                     showToast("Ошибка при сохранении!");
