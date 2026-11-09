@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>Медиа Хаб & Транскрибация 24/7</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
@@ -168,10 +168,21 @@
                 if (match && match[1]) {
                     const fileId = match[1];
                     if (type === 'video') {
-                        return `https://docs.google.com/uc?export=download&id=${fileId}`;
+                        // Возвращаем ссылку для встроенного плеера Google Диска (iframe)
+                        return `https://drive.google.com/file/d/${fileId}/preview`;
                     } else {
                         return `https://lh3.googleusercontent.com/d/${fileId}`;
                     }
+                }
+            }
+            return url;
+        }
+
+        function getOriginalDriveUrl(url) {
+            if (url.includes('drive.google.com')) {
+                const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+                if (match && match[1]) {
+                    return `https://drive.google.com/file/d/${match[1]}/view?usp=sharing`;
                 }
             }
             return url;
@@ -228,7 +239,11 @@
             try {
                 await window.addDoc(window.collection(window.db, "folders"), { name });
                 nameInput.value = '';
-                alert("Папка создана!");
+                // Сразу добавляем в локальный список для мгновенного отображения
+                if (!foldersList.includes(name)) {
+                    foldersList.push(name);
+                    renderFoldersUI();
+                }
             } catch (err) {
                 alert("Ошибка создания папки: " + err.message);
             }
@@ -309,6 +324,7 @@
             filtered.forEach((data) => {
                 const id = data.id;
                 const directUrl = formatMediaUrl(data.url, data.type);
+                const originalUrl = getOriginalDriveUrl(data.url);
                 const fileFolder = data.folder || 'Общие';
                 const fileType = data.type || 'video';
                 const fileTier = data.tier || 'free';
@@ -319,24 +335,31 @@
                 let mediaContent = '';
                 if (fileType === 'video') {
                     mediaContent = `
-                        <div class="w-full bg-black aspect-video flex items-center justify-center relative overflow-hidden">
-                            <video controls preload="metadata" class="w-full h-full object-contain">
-                                <source src="${directUrl}">
-                                Ваш браузер не поддерживает видео.
-                            </video>
+                        <div class="w-full bg-black aspect-video relative overflow-hidden flex flex-col">
+                            <div class="absolute top-2 right-2 z-10">
+                                <a href="${originalUrl}" target="_blank" class="bg-black/70 hover:bg-black text-white text-xs px-3 py-1.5 rounded-lg backdrop-blur border border-white/10 flex items-center gap-1.5 transition shadow-lg">
+                                    🔗 Открыть на Диске
+                                </a>
+                            </div>
+                            <iframe src="${directUrl}" class="w-full h-full border-0" allow="autoplay" allowfullscreen></iframe>
                         </div>
                     `;
                 } else {
                     mediaContent = `
-                        <div class="w-full bg-black aspect-video flex items-center justify-center relative overflow-hidden">
-                            <img src="${directUrl}" alt="${data.title}" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop';">
+                        <div class="w-full bg-black aspect-video relative overflow-hidden flex items-center justify-center">
+                            <div class="absolute top-2 right-2 z-10">
+                                <a href="${originalUrl}" target="_blank" class="bg-black/70 hover:bg-black text-white text-xs px-3 py-1.5 rounded-lg backdrop-blur border border-white/10 flex items-center gap-1.5 transition shadow-lg">
+                                    🔗 Открыть на Диске
+                                </a>
+                            </div>
+                            <img src="${directUrl}" alt="${escapeHtml(data.title)}" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop';">
                         </div>
                     `;
                 }
 
                 let folderOptions = '';
                 foldersList.forEach(f => {
-                    folderOptions += `<option value="${f}" ${f === fileFolder ? 'selected' : ''}>${f}</option>`;
+                    folderOptions += `<option value="${escapeHtml(f)}" ${f === fileFolder ? 'selected' : ''}>${escapeHtml(f)}</option>`;
                 });
 
                 card.innerHTML = `
