@@ -1,436 +1,17 @@
 <!DOCTYPE html>
-<html lang="ru" class="dark">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>База Креативов & Аналитика</title>
+    <title>Медиа Хаб & Транскрибация 24/7</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0f7ff',
-                            100: '#e0effe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(156, 163, 175, 0.4);
-            border-radius: 9999px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(156, 163, 175, 0.6);
-        }
-    </style>
-</head>
-<body class="bg-slate-950 dark:bg-slate-950 bg-slate-50 text-slate-100 dark:text-slate-100 text-slate-900 min-h-screen flex flex-col font-sans transition-colors duration-200" id="bodyEl">
-
-    <!-- Header Navigation -->
-    <header class="sticky top-0 z-30 backdrop-blur-md bg-slate-900/90 dark:bg-slate-900/90 bg-white/90 border-b border-slate-800 dark:border-slate-800 border-slate-200 px-4 lg:px-8 py-3.5 transition-colors">
-        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-            
-            <!-- View Switcher & Status -->
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-3">
-                    <div class="p-2.5 bg-blue-600/20 text-blue-500 rounded-xl border border-blue-500/30">
-                        <i data-lucide="clapperboard" class="w-6 h-6"></i>
-                    </div>
-                </div>
-
-                <!-- Main View Switcher Tabs -->
-                <div class="bg-slate-800/80 dark:bg-slate-800/80 bg-slate-200 p-1 rounded-xl border border-slate-700/60 dark:border-slate-700/60 border-slate-300 flex items-center gap-1">
-                    <button id="viewLibraryBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 bg-blue-600 text-white transition-all shadow">
-                        <i data-lucide="grid" class="w-3.5 h-3.5"></i>
-                        Библиотека
-                    </button>
-                    <button id="viewAnalyticsBtn" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 dark:text-slate-400 text-slate-700 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 transition-all">
-                        <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
-                        Аналитика
-                    </button>
-                </div>
-            </div>
-
-            <!-- Global Search Bar -->
-            <div class="flex-1 max-w-md min-w-[260px]">
-                <div class="relative">
-                    <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="searchInput" placeholder="Поиск по названию, тексту, нише..." 
-                        class="w-full pl-10 pr-10 py-2 text-sm bg-slate-900 dark:bg-slate-900 bg-white border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl text-slate-100 dark:text-slate-100 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                    <button id="clearSearchBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex items-center space-x-2">
-                <button id="saveAndShareBtn" class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-95" title="Сохранить в облако Firebase и синхронизировать">
-                    <i data-lucide="cloud-upload" class="w-4 h-4"></i>
-                    Сохранить в Облако
-                </button>
-
-                <button id="copySiteUrlBtn" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-slate-800 dark:bg-slate-800 bg-white hover:bg-slate-700 dark:hover:bg-slate-700 text-slate-200 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl transition-all" title="Скопировать ссылку на сайт для кента">
-                    <i data-lucide="link" class="w-4 h-4 text-blue-400"></i>
-                    Ссылка на сайт
-                </button>
-
-                <button id="addNicheBtn" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-slate-800 dark:bg-slate-800 bg-white hover:bg-slate-700 dark:hover:bg-slate-700 hover:bg-slate-100 text-slate-200 dark:text-slate-200 text-slate-800 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl transition-all">
-                    <i data-lucide="folder-plus" class="w-4 h-4 text-blue-500"></i>
-                    + Ниша
-                </button>
-                <button id="addCreativeBtn" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    Добавить медиа
-                </button>
-                <button id="themeToggleBtn" class="p-2 text-slate-400 hover:text-slate-100 bg-slate-800 dark:bg-slate-800 bg-white border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl transition-all" title="Переключить тему">
-                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block text-yellow-400"></i>
-                    <i data-lucide="moon" class="w-4 h-4 block dark:hidden text-slate-700"></i>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content Area -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
-
-        <!-- SECTION 1: LIBRARY VIEW -->
-        <div id="librarySection" class="space-y-6">
-            <!-- Funnel Tabs & Search Info -->
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/60 dark:bg-slate-900/60 bg-white p-1.5 rounded-2xl border border-slate-800 dark:border-slate-800 border-slate-200 shadow-sm">
-                <div class="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0" id="funnelTabs">
-                    <button data-funnel="all" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all bg-blue-600 text-white shadow-md">
-                        Все события <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20" id="cntAll">0</span>
-                    </button>
-                    <button data-funnel="free" class="tab-btn px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap text-slate-400 dark:text-slate-400 text-slate-600 hover:text-slate-200 transition-all">
-                        🟢 Бесплатные события <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-slate-800 dark:bg-slate-800 bg-slate-200 text-slate-300 dark:text-slate-300 text-slate-700" id="cntFree">0</span>
-                    </button>
-                    <button data-funnel="paid" class="tab-btn px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap text-slate-400 dark:text-slate-400 text-slate-600 hover:text-slate-200 transition-all">
-                        💳 Платные события <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-slate-800 dark:bg-slate-800 bg-slate-200 text-slate-300 dark:text-slate-300 text-slate-700" id="cntPaid">0</span>
-                    </button>
-                </div>
-
-                <div class="text-xs text-slate-400 px-3 py-1.5">
-                    Отображено: <span id="resultsCount" class="font-semibold text-blue-500">0</span> креативов
-                </div>
-            </div>
-
-            <!-- Dynamic Niche Pill Filters -->
-            <div class="flex items-center gap-2 overflow-x-auto pb-2 pt-1 no-scrollbar" id="nichePillContainer">
-                <!-- Dynamically populated -->
-            </div>
-
-            <!-- Cards Grid -->
-            <div id="creativesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-                <!-- Dynamic cards -->
-            </div>
-
-            <!-- Empty State -->
-            <div id="emptyState" class="hidden text-center py-16 space-y-3">
-                <div class="w-12 h-12 rounded-2xl bg-slate-900 dark:bg-slate-900 bg-slate-200 border border-slate-800 dark:border-slate-800 border-slate-300 text-slate-500 flex items-center justify-center mx-auto">
-                    <i data-lucide="search-x" class="w-6 h-6"></i>
-                </div>
-                <p class="text-base font-semibold text-slate-300 dark:text-slate-300 text-slate-700">Ничего не найдено</p>
-                <p class="text-xs text-slate-500 max-w-sm mx-auto">Добавьте первый креатив или нажмите кнопку «Добавить медиа».</p>
-                <button id="resetFiltersBtn" class="mt-2 px-4 py-2 text-xs font-semibold bg-slate-900 dark:bg-slate-900 bg-slate-200 hover:bg-slate-800 dark:hover:bg-slate-800 text-blue-500 border border-slate-800 dark:border-slate-800 border-slate-300 rounded-xl transition-all">
-                    Сбросить все фильтры
-                </button>
-            </div>
-        </div>
-
-        <!-- SECTION 2: ADVANCED ANALYTICS TAB -->
-        <div id="analyticsSection" class="hidden space-y-6">
-            <div class="flex items-center justify-between border-b border-slate-800 dark:border-slate-800 border-slate-200 pb-4">
-                <div>
-                    <h2 class="text-xl font-bold dark:text-white text-slate-900">Продвинутая Аналитика</h2>
-                    <p class="text-xs text-slate-400">Сводные метрики, структура ориентации медиа и распределение по нишам.</p>
-                </div>
-            </div>
-
-            <!-- Metric Cards Overview -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-slate-900/60 dark:bg-slate-900/60 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 p-4 rounded-2xl shadow-sm">
-                    <div class="flex items-center justify-between text-slate-400 text-xs mb-2">
-                        <span>Всего креативов</span>
-                        <i data-lucide="layers" class="w-4 h-4 text-blue-500"></i>
-                    </div>
-                    <div class="text-2xl font-bold dark:text-white text-slate-900" id="statTotal">0</div>
-                    <span class="text-[10px] text-slate-500">В текущей базе данных</span>
-                </div>
-
-                <div class="bg-slate-900/60 dark:bg-slate-900/60 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 p-4 rounded-2xl shadow-sm">
-                    <div class="flex items-center justify-between text-slate-400 text-xs mb-2">
-                        <span>Вертикальные (9:16)</span>
-                        <i data-lucide="smartphone" class="w-4 h-4 text-pink-500"></i>
-                    </div>
-                    <div class="text-2xl font-bold text-pink-500" id="statVerticalCount">0</div>
-                    <span class="text-[10px] text-slate-500">Reels / Shorts / TikTok</span>
-                </div>
-
-                <div class="bg-slate-900/60 dark:bg-slate-900/60 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 p-4 rounded-2xl shadow-sm">
-                    <div class="flex items-center justify-between text-slate-400 text-xs mb-2">
-                        <span>Горизонтальные (16:9)</span>
-                        <i data-lucide="monitor" class="w-4 h-4 text-purple-500"></i>
-                    </div>
-                    <div class="text-2xl font-bold text-purple-500" id="statHorizontalCount">0</div>
-                    <span class="text-[10px] text-slate-500">Широкоформатный контент</span>
-                </div>
-
-                <div class="bg-slate-900/60 dark:bg-slate-900/60 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 p-4 rounded-2xl shadow-sm">
-                    <div class="flex items-center justify-between text-slate-400 text-xs mb-2">
-                        <span>Изображения / Фото</span>
-                        <i data-lucide="image" class="w-4 h-4 text-emerald-500"></i>
-                    </div>
-                    <div class="text-2xl font-bold text-emerald-500" id="statStaticCount">0</div>
-                    <span class="text-[10px] text-slate-500">Статичные баннеры и макеты</span>
-                </div>
-            </div>
-
-            <!-- Detailed Breakdowns -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Funnel Split & Format Breakdown -->
-                <div class="bg-slate-900/60 dark:bg-slate-900/60 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl p-5 space-y-5 shadow-sm">
-                    <h3 class="text-sm font-semibold dark:text-white text-slate-900 flex items-center gap-2">
-                        <i data-lucide="pie-chart" class="w-4 h-4 text-blue-500"></i> Распределение по Воронкам и Ориентации
-                    </h3>
-                    
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-xs text-slate-400">
-                            <span>Бесплатные (<span id="pctFree">0</span>%)</span>
-                            <span>Платные (<span id="pctPaid">0</span>%)</span>
-                        </div>
-                        <div class="w-full h-3 bg-slate-950 dark:bg-slate-950 bg-slate-200 rounded-full overflow-hidden flex">
-                            <div id="barFree" class="bg-emerald-500 h-full transition-all duration-500" style="width: 50%"></div>
-                            <div id="barPaid" class="bg-amber-500 h-full transition-all duration-500" style="width: 50%"></div>
-                        </div>
-                    </div>
-
-                    <div class="pt-2 border-t border-slate-800 dark:border-slate-800 border-slate-200">
-                        <h4 class="text-xs font-semibold dark:text-slate-300 text-slate-700 mb-3">Формат и Ориентация Креативов</h4>
-                        <div class="grid grid-cols-2 gap-3" id="formatBreakdown">
-                            <!-- JS filled -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Niche Distribution -->
-                <div class="bg-slate-900/60 dark:bg-slate-900/60 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-                    <h3 class="text-sm font-semibold dark:text-white text-slate-900 flex items-center gap-2">
-                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-500"></i> Концентрация по Нишам
-                    </h3>
-                    <div id="nicheBreakdownList" class="space-y-3">
-                        <!-- Filled dynamically -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- MODAL 1: Add/Edit Creative -->
-    <div id="addModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
-        <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl w-full max-w-lg p-6 m-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button id="closeModalBtn" class="absolute right-4 top-4 text-slate-400 hover:text-white p-1 rounded-lg">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-
-            <h2 class="text-lg font-bold dark:text-white text-slate-900 mb-1" id="modalTitle">Добавить креатив</h2>
-            <p class="text-xs text-slate-400 mb-5">Заполните параметры креатива или отредактируйте существующие.</p>
-
-            <form id="addCreativeForm" class="space-y-4 text-xs">
-                <input type="hidden" id="formEditingId" value="">
-
-                <div>
-                    <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Название / Оффер *</label>
-                    <input type="text" required id="formTitle" placeholder="Напр.: 3 ошибки в уходе за кожей" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Направление (Воронка) *</label>
-                        <select id="formFunnel" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="free">🟢 Бесплатное событие</option>
-                            <option value="paid">💳 Платное событие</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Тип медиа *</label>
-                        <select id="formFormat" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="video">📹 Видео (Все форматы: MP4, MOV, WEBM, MKV, AVI)</option>
-                            <option value="static">🖼 Изображение / Фото / Баннер</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Ориентация Видео/Фото *</label>
-                        <select id="formOrientation" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="vertical">📱 Вертикальное (9:16)</option>
-                            <option value="horizontal">🖥 Горизонтальное (16:9)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Ниша *</label>
-                        <select id="formCategory" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <!-- Populated dynamically -->
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Quick Add Niche -->
-                <div id="quickAddNicheContainer" class="hidden bg-slate-900/90 dark:bg-slate-900/90 bg-slate-200 p-3 rounded-xl border border-blue-500/40 space-y-2">
-                    <label class="block text-[11px] font-semibold text-blue-400">Название новой ниши:</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="quickNicheInput" placeholder="Напр.: Инвестиции" class="flex-1 bg-slate-950 dark:bg-slate-950 bg-white border border-slate-700 dark:border-slate-700 border-slate-300 rounded-lg px-3 py-1.5 dark:text-slate-100 text-slate-900 focus:outline-none">
-                        <button type="button" id="quickNicheSaveBtn" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500">Сохранить</button>
-                    </div>
-                </div>
-
-                <!-- Media Source Input -->
-                <div class="space-y-1.5">
-                    <div class="flex items-center justify-between">
-                        <label class="block font-medium dark:text-slate-300 text-slate-700">Медиафайл (Любое видео / Фото)</label>
-                        <div class="flex bg-slate-800 p-0.5 rounded-lg border border-slate-700 text-[10px]">
-                            <button type="button" id="mediaTypeUrlBtn" class="px-2 py-0.5 rounded bg-blue-600 text-white font-medium">Ссылка URL</button>
-                            <button type="button" id="mediaTypeFileBtn" class="px-2 py-0.5 rounded text-slate-400 hover:text-white font-medium">С устройства</button>
-                        </div>
-                    </div>
-
-                    <div id="mediaUrlBox">
-                        <input type="url" id="formMediaUrl" placeholder="https://... (MP4, MOV, WEBM, YouTube, VK или картинка)" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-
-                    <div id="mediaFileBox" class="hidden">
-                        <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-blue-500 bg-slate-900/50 hover:bg-slate-900 rounded-xl p-4 cursor-pointer transition-all">
-                            <i data-lucide="upload-cloud" class="w-6 h-6 text-blue-500 mb-1"></i>
-                            <span class="text-xs text-slate-300 font-medium" id="mediaFileName">Выберите файл с компьютера / телефона</span>
-                            <span class="text-[10px] text-slate-400 mt-1">Поддерживает ВСЕ форматы: MP4, MOV, WEBM, MKV, AVI, JPG, PNG</span>
-                            <input type="file" id="formMediaFile" accept="video/*,image/*,.mkv,.avi,.mov" class="hidden">
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Cover Source Input -->
-                <div class="space-y-1.5">
-                    <div class="flex items-center justify-between">
-                        <label class="block font-medium dark:text-slate-300 text-slate-700">Обложка / Превью (опционально)</label>
-                        <div class="flex bg-slate-800 p-0.5 rounded-lg border border-slate-700 text-[10px]">
-                            <button type="button" id="posterTypeUrlBtn" class="px-2 py-0.5 rounded bg-blue-600 text-white font-medium">Ссылка URL</button>
-                            <button type="button" id="posterTypeFileBtn" class="px-2 py-0.5 rounded text-slate-400 hover:text-white font-medium">С устройства</button>
-                        </div>
-                    </div>
-
-                    <div id="posterUrlBox">
-                        <input type="url" id="formPosterUrl" placeholder="https://... (ссылка на картинку-превью)" class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-
-                    <div id="posterFileBox" class="hidden">
-                        <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-blue-500 bg-slate-900/50 hover:bg-slate-900 rounded-xl p-3 cursor-pointer transition-all">
-                            <i data-lucide="image" class="w-5 h-5 text-purple-400 mb-1"></i>
-                            <span class="text-xs text-slate-300 font-medium" id="posterFileName">Выберите обложку</span>
-                            <span class="text-[10px] text-slate-500">JPG, PNG, WEBP</span>
-                            <input type="file" id="formPosterFile" accept="image/*" class="hidden">
-                        </label>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block font-medium dark:text-slate-300 text-slate-700 mb-1">Полная транскрибация текста *</label>
-                    <textarea id="formTranscription" rows="4" required placeholder="Введите текст с креатива или полную расшифровку речи..." class="w-full bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2.5 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                </div>
-
-                <div class="pt-2 flex justify-end gap-2">
-                    <button type="button" id="cancelModalBtn" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800">Отмена</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/20">Сохранить</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: Manage Dynamic Niches -->
-    <div id="nicheModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
-        <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl w-full max-w-md p-6 m-4 shadow-2xl relative">
-            <button id="closeNicheModalBtn" class="absolute right-4 top-4 text-slate-400 hover:text-white p-1 rounded-lg">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-
-            <h2 class="text-lg font-bold dark:text-white text-slate-900 mb-1">Управление Нишами</h2>
-            <p class="text-xs text-slate-400 mb-4">Добавляйте новые или удаляйте неиспользуемые категории.</p>
-
-            <div class="space-y-4 text-xs">
-                <div class="flex gap-2">
-                    <input type="text" id="newNicheInput" placeholder="Новая ниша (напр. Недвижимость)" class="flex-1 bg-slate-900 dark:bg-slate-900 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-300 rounded-xl px-3 py-2 dark:text-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <button id="saveNewNicheBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl">
-                        Добавить
-                    </button>
-                </div>
-
-                <div class="border-t border-slate-800 dark:border-slate-800 border-slate-200 pt-3">
-                    <label class="block text-slate-400 font-medium mb-2">Существующие ниши:</label>
-                    <div id="nicheList" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 3: Delete Confirmation Modal -->
-    <div id="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
-        <div class="bg-slate-900 dark:bg-slate-900 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl w-full max-w-sm p-6 m-4 shadow-2xl relative text-center">
-            <div class="w-12 h-12 bg-rose-500/10 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
-                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-            </div>
-            <h3 class="text-base font-bold dark:text-white text-slate-900 mb-1">Удалить креатив?</h3>
-            <p class="text-xs text-slate-400 mb-6">Это действие нельзя будет отменить. Креатив будет полностью удален.</p>
-            
-            <div class="flex gap-3 justify-center text-xs">
-                <button id="cancelDeleteBtn" class="flex-1 py-2.5 rounded-xl border border-slate-700 dark:border-slate-700 border-slate-300 dark:text-slate-300 text-slate-700 hover:bg-slate-800 dark:hover:bg-slate-800 hover:bg-slate-100 font-medium">
-                    Отмена
-                </button>
-                <button id="confirmDeleteBtn" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold shadow-lg shadow-rose-600/20">
-                    Удалить
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2.5 px-4 py-3 bg-slate-900 dark:bg-slate-900 bg-white text-slate-100 dark:text-slate-100 text-slate-900 border border-slate-700 rounded-xl shadow-xl text-xs font-medium">
-        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
-        <span id="toastMsg">Успешно!</span>
-    </div>
-
-    <!-- Script Block -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // =========================================================================
-        // ⚙️ ТВОИ ВСТАВЛЕННЫЕ ДАННЫЕ ИЗ FIREBASE (PROJECT: saitaaaa):
-        // =========================================================================
-        const myCustomFirebaseConfig = {
+        // Ключи Firebase
+        const firebaseConfig = {
             apiKey: "AIzaSyBOvBJl3ftoA-185RFuN3QFkpksEVqad5o",
             authDomain: "saitaaaa.firebaseapp.com",
             projectId: "saitaaaa",
@@ -439,847 +20,433 @@
             appId: "1:193388237446:web:bf43acd550157d04bb7707",
             measurementId: "G-R31S7D36X9"
         };
-        // =========================================================================
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-creatives-shared-db';
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
+        window.updateDoc = updateDoc;
+        window.onSnapshot = onSnapshot;
+        window.query = query;
+        window.orderBy = orderBy;
         
-        const firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) 
-            ? JSON.parse(__firebase_config) 
-            : (myCustomFirebaseConfig.apiKey !== "ВСТАВЬ_СВОЙ_API_KEY" ? myCustomFirebaseConfig : null);
+        window.dispatchEvent(new Event('firebase-ready'));
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
 
-        let db = null;
-        let auth = null;
-        let isCloudActive = false;
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <!-- Шапка -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-800 pb-6 gap-4">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    📁 Медиа Хаб с Транскрибацией
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">Всё мгновенно синхронизируется у всех по вашей ссылке 24/7!</p>
+            </div>
+            <div id="connection-status" class="px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                Подключение к базе...
+            </div>
+        </header>
 
-        const defaultCategories = [
-            'Beauty & Уход',
-            'Экспертные блоги',
-            'E-commerce & Товары',
-            'Фитнес & Здоровье',
-            'Курсы & Образование'
-        ];
+        <!-- Управление папками -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4 shadow-lg">
+            <div class="flex items-center gap-2 flex-wrap" id="folders-filter">
+                <button onclick="filterFolder('all')" class="folder-btn px-4 py-2 rounded-xl text-xs font-medium bg-indigo-600 text-white transition">
+                    📂 Все файлы
+                </button>
+                <!-- Динамические папки -->
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="new-folder-name" placeholder="Имя новой папки..." 
+                    class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                <button onclick="createNewFolder()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs font-medium transition">
+                    + Создать папку
+                </button>
+            </div>
+        </div>
 
-        const defaultCreatives = [];
+        <!-- Форма добавления -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-10 shadow-xl">
+            <h2 class="text-lg font-semibold mb-4 text-white">Добавить видео или фото</h2>
+            <form id="media-form" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Название файла</label>
+                        <input type="text" id="file-title" required placeholder="Например: Выпуск 1" 
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Тип медиа</label>
+                        <select id="file-type" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                            <option value="video">Видео (любой размер, формат 9:16, 16:9 и др.)</option>
+                            <option value="image">Фото / Картинка</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Папка</label>
+                        <select id="file-folder" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                            <option value="Общие">Общие</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Ссылка на файл (Google Диск или прямая URL-ссылка)</label>
+                    <input type="url" id="file-url" required placeholder="https://drive.google.com/file/d/ВАШ_ID/view" 
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Транскрибация / Текст</label>
+                    <textarea id="file-transcription" rows="3" placeholder="Введите или вставьте сюда транскрибацию..." 
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-xl text-sm transition shadow-lg shadow-indigo-600/25">
+                    Опубликовать на сайт
+                </button>
+            </form>
+        </div>
 
-        let uploadedMediaData = null; 
-        let uploadedPosterData = null;
+        <!-- Список элементов -->
+        <div class="mb-4 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-white">Загруженные файлы</h2>
+            <span id="files-count" class="text-xs text-slate-400">Загрузка...</span>
+        </div>
 
-        function loadInitialState() {
-            let savedCats = null;
-            let savedCreats = null;
-            try {
-                savedCats = JSON.parse(localStorage.getItem('analytics_categories'));
-                savedCreats = JSON.parse(localStorage.getItem('analytics_creatives'));
-            } catch(e) {}
+        <div id="media-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="text-center py-12 text-slate-500 col-span-full">
+                Подключение к облаку...
+            </div>
+        </div>
+    </div>
 
-            return {
-                categories: (savedCats && Array.isArray(savedCats) && savedCats.length > 0) ? savedCats : defaultCategories,
-                creatives: (savedCreats && Array.isArray(savedCreats)) ? savedCreats : defaultCreatives
-            };
-        }
+    <script>
+        let currentFolderFilter = 'all';
+        let cachedItems = [];
+        let foldersList = ['Общие'];
 
-        const initialState = loadInitialState();
-        window.categories = initialState.categories;
-        window.creatives = initialState.creatives;
-
-        window.currentView = 'library';
-        window.activeFunnel = 'all';
-        window.activeCategory = 'all';
-        window.searchQuery = '';
-        window.creativeToDeleteId = null;
-
-        function saveLocal() {
-            try {
-                localStorage.setItem('analytics_categories', JSON.stringify(window.categories));
-                localStorage.setItem('analytics_creatives', JSON.stringify(window.creatives));
-            } catch(e) {
-                console.warn("Storage error:", e);
-            }
-        }
-
-        window.saveData = async function() {
-            saveLocal();
+        window.addEventListener('firebase-ready', () => {
+            const statusEl = document.getElementById('connection-status');
+            statusEl.textContent = 'База подключена (Online)';
+            statusEl.className = 'px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
             
-            if (isCloudActive && db) {
-                try {
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
-                    await setDoc(docRef, {
-                        categories: window.categories,
-                        creatives: window.creatives,
-                        updatedAt: Date.now()
-                    }, { merge: true });
-                    return true;
-                } catch(e) {
-                    console.error("Firebase Cloud Save Error:", e);
-                    return false;
+            loadMediaItems();
+            loadFolders();
+        });
+
+        function formatMediaUrl(url, type) {
+            if (url.includes('drive.google.com')) {
+                const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+                if (match && match[1]) {
+                    const fileId = match[1];
+                    if (type === 'video') {
+                        return `https://docs.google.com/uc?export=download&id=${fileId}`;
+                    } else {
+                        return `https://lh3.googleusercontent.com/d/${fileId}`;
+                    }
                 }
             }
-            return false;
-        };
+            return url;
+        }
 
-        async function initFirebaseCloud() {
-            if (!firebaseConfig) {
-                console.log("⚠️ Firebase не настроен. Для включения вставьте ключи в myCustomFirebaseConfig!");
+        function loadFolders() {
+            window.onSnapshot(window.collection(window.db, "folders"), (snapshot) => {
+                foldersList = ['Общие'];
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.name && !foldersList.includes(data.name)) {
+                        foldersList.push(data.name);
+                    }
+                });
+                renderFoldersUI();
+            });
+        }
+
+        function renderFoldersUI() {
+            const filterContainer = document.getElementById('folders-filter');
+            const selectContainer = document.getElementById('file-folder');
+            
+            // Сохраняем текущий выбор в селекте формы
+            const selectedVal = selectContainer.value;
+            selectContainer.innerHTML = '';
+            
+            let filterHtml = `<button onclick="filterFolder('all')" class="folder-btn px-4 py-2 rounded-xl text-xs font-medium ${currentFolderFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'} transition">📂 Все файлы</button>`;
+            
+            foldersList.forEach(folder => {
+                const isSelected = currentFolderFilter === folder;
+                filterHtml += `<button onclick="filterFolder('${folder}')" class="folder-btn px-4 py-2 rounded-xl text-xs font-medium ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'} transition">📁 ${folder}</button>`;
+                
+                const opt = document.createElement('option');
+                opt.value = folder;
+                opt.textContent = folder;
+                selectContainer.appendChild(opt);
+            });
+            
+            filterContainer.innerHTML = filterHtml;
+            if (foldersList.includes(selectedVal)) {
+                selectContainer.value = selectedVal;
+            }
+        }
+
+        window.createNewFolder = async function() {
+            const nameInput = document.getElementById('new-folder-name');
+            const name = nameInput.value.trim();
+            if (!name) return;
+            
+            if (foldersList.includes(name)) {
+                alert("Такая папка уже существует!");
                 return;
             }
 
             try {
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                isCloudActive = true;
-                const cloudDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'store', 'main');
-
-                const snapshotInitial = await getDoc(cloudDocRef);
-                if (snapshotInitial.exists()) {
-                    const data = snapshotInitial.data();
-                    if (data.categories && Array.isArray(data.categories)) window.categories = data.categories;
-                    if (data.creatives && Array.isArray(data.creatives)) window.creatives = data.creatives;
-                    saveLocal();
-                    window.renderApp();
-                } else {
-                    await window.saveData();
-                }
-
-                onSnapshot(cloudDocRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        const data = snapshot.data();
-                        if (data.categories && Array.isArray(data.categories)) window.categories = data.categories;
-                        if (data.creatives && Array.isArray(data.creatives)) window.creatives = data.creatives;
-                        saveLocal();
-                        window.renderApp();
-                    }
-                }, (error) => {
-                    console.warn("Firebase snapshot error:", error);
-                });
-
-            } catch(err) {
-                console.error("Firebase Auth/Init failure:", err);
+                await window.addDoc(window.collection(window.db, "folders"), { name });
+                nameInput.value = '';
+                alert("Папка создана!");
+            } catch (err) {
+                alert("Ошибка создания папки: " + err.message);
             }
-        }
-
-        window.renderApp = function() {
-            renderCategoryPills();
-            populateFormCategories();
-            renderCreatives();
-            updateCounts();
-            if (window.currentView === 'analytics') renderAnalytics();
-            if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
-        function renderCategoryPills() {
-            const container = document.getElementById('nichePillContainer');
-            if (!container) return;
-            let html = `
-                <button data-cat="all" class="niche-pill px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all border ${window.activeCategory === 'all' ? 'bg-blue-600/20 text-blue-500 border-blue-500/40 font-semibold' : 'bg-slate-900/60 dark:bg-slate-900/60 bg-white text-slate-400 dark:text-slate-400 text-slate-700 border-slate-800 dark:border-slate-800 border-slate-300 hover:border-slate-500'}">
-                    Все ниши
-                </button>
-            `;
-            window.categories.forEach(cat => {
-                const isActive = window.activeCategory === cat;
-                html += `
-                    <button data-cat="${escapeHtml(cat)}" class="niche-pill px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all border ${isActive ? 'bg-blue-600/20 text-blue-500 border-blue-500/40 font-semibold' : 'bg-slate-900/60 dark:bg-slate-900/60 bg-white text-slate-400 dark:text-slate-400 text-slate-700 border-slate-800 dark:border-slate-800 border-slate-300 hover:border-slate-500'}">
-                        ${escapeHtml(cat)}
-                    </button>
-                `;
-            });
-            container.innerHTML = html;
-        }
+        window.filterFolder = function(folderName) {
+            currentFolderFilter = folderName;
+            renderFoldersUI();
+            renderMediaGrid();
+        };
 
-        function populateFormCategories() {
-            const select = document.getElementById('formCategory');
-            if (!select) return;
-            let optionsHtml = window.categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
-            optionsHtml += `<option value="__NEW_NICHE__" class="text-blue-400 font-semibold">+ Создать новую нишу...</option>`;
-            select.innerHTML = optionsHtml;
-        }
-
-        function getFilteredCreatives() {
-            return window.creatives.filter(item => {
-                if (window.activeFunnel !== 'all' && item.funnel !== window.activeFunnel) return false;
-                if (window.activeCategory !== 'all' && item.category !== window.activeCategory) return false;
-                if (window.searchQuery.trim() !== '') {
-                    const q = window.searchQuery.toLowerCase();
-                    const inTitle = item.title ? item.title.toLowerCase().includes(q) : false;
-                    const inTrans = item.transcription ? item.transcription.toLowerCase().includes(q) : false;
-                    const inCat = item.category ? item.category.toLowerCase().includes(q) : false;
-                    if (!inTitle && !inTrans && !inCat) return false;
-                }
-                return true;
-            });
-        }
-
-        window.handleVideoError = function(videoEl, rawSrc) {
-            if (videoEl.getAttribute('data-error-handled')) return;
-            videoEl.setAttribute('data-error-handled', 'true');
+        function loadMediaItems() {
+            const q = window.query(window.collection(window.db, "mediaItems"), window.orderBy("createdAt", "desc"));
             
-            if (rawSrc.startsWith('data:')) {
-                try {
-                    const parts = rawSrc.split(';base64,');
-                    const contentType = parts[0].split(':')[1] || 'video/mp4';
-                    const raw = window.atob(parts[1]);
-                    const rawLength = raw.length;
-                    const uInt8Array = new Uint8Array(rawLength);
-                    for (let i = 0; i < rawLength; ++i) {
-                        uInt8Array[i] = raw.charCodeAt(i);
-                    }
-                    const blob = new Blob([uInt8Array], { type: contentType });
-                    const blobUrl = URL.createObjectURL(blob);
-                    videoEl.src = blobUrl;
-                    videoEl.load();
-                    videoEl.play().catch(() => {});
-                    return;
-                } catch(e) {
-                    console.error("Blob fallback failed", e);
-                }
-            }
+            window.onSnapshot(q, (snapshot) => {
+                cachedItems = [];
+                snapshot.forEach((docSnap) => {
+                    cachedItems.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderMediaGrid();
+            });
+        }
 
-            videoEl.src = rawSrc;
-            videoEl.load();
-        };
+        function renderMediaGrid() {
+            const grid = document.getElementById('media-grid');
+            const countEl = document.getElementById('files-count');
+            grid.innerHTML = '';
 
-        function renderCreatives() {
-            const grid = document.getElementById('creativesGrid');
-            const empty = document.getElementById('emptyState');
-            const cnt = document.getElementById('resultsCount');
-            if (!grid) return;
-
-            const filtered = getFilteredCreatives();
-            if (cnt) cnt.textContent = filtered.length;
+            const filtered = cachedItems.filter(item => {
+                if (currentFolderFilter === 'all') return true;
+                return (item.folder || 'Общие') === currentFolderFilter;
+            });
+            
+            countEl.textContent = `Файлов в предпросмотре: ${filtered.length}`;
 
             if (filtered.length === 0) {
-                grid.innerHTML = '';
-                if (empty) empty.classList.remove('hidden');
+                grid.innerHTML = `
+                    <div class="text-center py-16 text-slate-500 col-span-full bg-slate-900/50 rounded-2xl border border-slate-800">
+                        <p class="text-base font-medium">В этой папке пока нет файлов.</p>
+                        <p class="text-sm mt-1">Добавьте новый файл или переключите папку!</p>
+                    </div>
+                `;
                 return;
             }
 
-            if (empty) empty.classList.add('hidden');
+            filtered.forEach((data) => {
+                const id = data.id;
+                const directUrl = formatMediaUrl(data.url, data.type);
+                const fileFolder = data.folder || 'Общие';
+                const fileType = data.type || 'video';
 
-            grid.innerHTML = filtered.map(item => {
-                const isPaid = item.funnel === 'paid';
-                const isVideo = item.format === 'video';
-                const isVertical = item.orientation === 'vertical';
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between";
                 
-                const defaultVideo = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
-                const mediaSrc = item.mediaUrl || (isVideo ? defaultVideo : 'https://placehold.co/600x337/1e293b/94a3b8?text=Изображение');
-                const posterSrc = item.posterUrl || '';
-                
-                const aspectClass = isVertical ? 'aspect-[9/16] min-h-[380px] max-h-[520px]' : 'aspect-[16/9] min-h-[220px]';
-
-                return `
-                    <div class="bg-slate-900/60 dark:bg-slate-900/60 bg-white border border-slate-800 dark:border-slate-800 border-slate-200 rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl group shadow-sm">
-                        
-                        <div class="relative ${aspectClass} bg-slate-950 border-b border-slate-800 dark:border-slate-800 border-slate-200 overflow-hidden flex items-center justify-center">
-                            ${isVideo ? `
-                                <video 
-                                    src="${mediaSrc}" 
-                                    ${posterSrc ? `poster="${posterSrc}"` : ''} 
-                                    controls 
-                                    playsinline 
-                                    webkit-playsinline
-                                    preload="metadata"
-                                    onerror="handleVideoError(this, '${escapeJsString(mediaSrc)}')" 
-                                    class="w-full h-full object-cover transition-all duration-300 group-hover:scale-[1.01]"
-                                >
-                                </video>
-                            ` : `
-                                <img src="${mediaSrc}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x337/1e293b/94a3b8?text=Изображение'">
-                            `}
-
-                            <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none z-10">
-                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-semibold tracking-wide backdrop-blur-md shadow-sm border ${isPaid ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'}">
-                                    ${isPaid ? '💳 Платное' : '🟢 Бесплатное'}
-                                </span>
-                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-medium backdrop-blur-md bg-slate-950/70 text-slate-300 border border-slate-800 flex items-center gap-1">
-                                    ${isVideo ? '<i data-lucide="video" class="w-3 h-3 text-pink-400"></i> Reels / Видео' : '<i data-lucide="image" class="w-3 h-3 text-emerald-400"></i> Фото'}
-                                </span>
-                                <span class="px-2 py-1 rounded-lg text-[10px] font-medium backdrop-blur-md bg-slate-950/70 text-slate-300 border border-slate-800">
-                                    ${isVertical ? '📱 9:16' : '🖥 16:9'}
-                                </span>
-                            </div>
+                let mediaContent = '';
+                if (fileType === 'video') {
+                    mediaContent = `
+                        <div class="w-full bg-black aspect-video flex items-center justify-center relative overflow-hidden">
+                            <video controls preload="metadata" class="w-full h-full object-contain">
+                                <source src="${directUrl}">
+                                Ваш браузер не поддерживает видео.
+                            </video>
                         </div>
+                    `;
+                } else {
+                    mediaContent = `
+                        <div class="w-full bg-black aspect-video flex items-center justify-center relative overflow-hidden">
+                            <img src="${directUrl}" alt="${data.title}" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop';">
+                        </div>
+                    `;
+                }
 
-                        <div class="p-4 flex-1 flex flex-col justify-between space-y-4">
-                            <div>
-                                <div class="flex items-center justify-between text-xs mb-1.5">
-                                    <span class="text-blue-500 font-medium">${escapeHtml(item.category)}</span>
-                                    <div class="flex items-center space-x-1">
-                                        <button onclick="editCreative('${item.id}')" class="text-slate-400 hover:text-blue-400 p-1 rounded transition-colors" title="Редактировать">
-                                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                                        </button>
-                                        <button onclick="promptDeleteCreative('${item.id}')" class="text-slate-400 hover:text-rose-500 p-1 rounded transition-colors" title="Удалить">
-                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                        </button>
+                let folderOptions = '';
+                foldersList.forEach(f => {
+                    folderOptions += `<option value="${f}" ${f === fileFolder ? 'selected' : ''}>${f}</option>`;
+                });
+
+                card.innerHTML = `
+                    <div>
+                        ${mediaContent}
+                        <div class="p-5">
+                            <div class="flex justify-between items-start gap-2 mb-2">
+                                <input type="text" value="${escapeHtml(data.title || '')}" id="title-${id}" 
+                                    class="bg-transparent font-semibold text-white text-base w-full border-b border-transparent hover:border-slate-700 focus:border-indigo-500 focus:outline-none transition py-0.5">
+                                <button onclick="saveTitle('${id}')" title="Сохранить название" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg shrink-0 transition">
+                                    💾
+                                </button>
+                            </div>
+
+                            <!-- Блок редактирования папки и типа файла -->
+                            <div class="grid grid-cols-2 gap-2 mb-3">
+                                <div>
+                                    <label class="text-[10px] text-slate-400 block mb-0.5">Папка:</label>
+                                    <select id="folder-select-${id}" onchange="updateFileMeta('${id}')" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-indigo-300 focus:outline-none">
+                                        ${folderOptions}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-slate-400 block mb-0.5">Тип:</label>
+                                    <select id="type-select-${id}" onchange="updateFileMeta('${id}')" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-indigo-300 focus:outline-none">
+                                        <option value="video" ${fileType === 'video' ? 'selected' : ''}>Видео</option>
+                                        <option value="image" ${fileType === 'image' ? 'selected' : ''}>Фото</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Блок редактирования URL -->
+                            <div class="mb-3">
+                                <label class="text-[10px] text-slate-400 block mb-0.5">Ссылка на файл:</label>
+                                <div class="flex gap-1">
+                                    <input type="url" value="${escapeHtml(data.url || '')}" id="url-${id}" 
+                                        class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
+                                    <button onclick="saveFileUrl('${id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg text-xs shrink-0 transition">Изменить</button>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="text-xs font-medium text-slate-400">Транскрибация:</label>
+                                    <div class="flex gap-2">
+                                        <button onclick="copyTranscription('${id}')" class="text-xs text-indigo-400 hover:text-indigo-300 transition">Копировать</button>
+                                        <button onclick="saveTranscription('${id}')" class="text-xs bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 px-2 py-0.5 rounded transition">Сохранить текст</button>
                                     </div>
                                 </div>
-
-                                <h3 class="font-semibold dark:text-slate-100 text-slate-900 text-sm line-clamp-2 leading-snug group-hover:text-blue-500 transition-colors">
-                                    ${escapeHtml(item.title)}
-                                </h3>
-                            </div>
-
-                            <div class="bg-slate-950 dark:bg-slate-950 bg-slate-100 border border-slate-800 dark:border-slate-800 border-slate-200 rounded-xl p-3 flex flex-col space-y-2">
-                                <div class="flex items-center justify-between border-b border-slate-800 dark:border-slate-800 border-slate-200 pb-2">
-                                    <span class="text-[11px] font-medium text-slate-400 dark:text-slate-400 text-slate-600 flex items-center gap-1.5">
-                                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-500"></i> Транскрибация
-                                    </span>
-                                    <button onclick="copyText(this, \`${escapeJsString(item.transcription)}\`)" class="flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-white bg-slate-900 px-2 py-1 rounded-lg border border-slate-800 transition-all">
-                                        <i data-lucide="copy" class="w-3 h-3"></i> Копировать
-                                    </button>
-                                </div>
-
-                                <div class="text-xs dark:text-slate-300 text-slate-800 leading-relaxed max-h-24 overflow-y-auto pr-1">
-                                    ${escapeHtml(item.transcription)}
-                                </div>
+                                <textarea id="trans-${id}" rows="4" 
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition">${escapeHtml(data.transcription || '')}</textarea>
                             </div>
                         </div>
-
+                    </div>
+                    <div class="px-5 py-3 bg-slate-950/50 border-t border-slate-800 flex justify-between items-center text-xs text-slate-500">
+                        <span>Добавлено: ${new Date(data.createdAt?.toDate?.() || Date.now()).toLocaleDateString()}</span>
+                        <button onclick="deleteItem('${id}')" class="text-red-400 hover:text-red-300 transition">Удалить</button>
                     </div>
                 `;
-            }).join('');
-
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-
-        function renderAnalytics() {
-            const total = window.creatives.length;
-            const freeCount = window.creatives.filter(c => c.funnel === 'free').length;
-            const paidCount = window.creatives.filter(c => c.funnel === 'paid').length;
-            const verticalCount = window.creatives.filter(c => c.orientation === 'vertical').length;
-            const horizontalCount = window.creatives.filter(c => c.orientation === 'horizontal').length;
-            const staticCount = window.creatives.filter(c => c.format === 'static').length;
-            const videoCount = window.creatives.filter(c => c.format === 'video').length;
-
-            document.getElementById('statTotal').textContent = total;
-            document.getElementById('statVerticalCount').textContent = verticalCount;
-            document.getElementById('statHorizontalCount').textContent = horizontalCount;
-            document.getElementById('statStaticCount').textContent = staticCount;
-
-            const freePct = total > 0 ? Math.round((freeCount / total) * 100) : 0;
-            const paidPct = total > 0 ? 100 - freePct : 0;
-
-            document.getElementById('pctFree').textContent = freePct;
-            document.getElementById('pctPaid').textContent = paidPct;
-            document.getElementById('barFree').style.width = freePct + '%';
-            document.getElementById('barPaid').style.width = paidPct + '%';
-
-            document.getElementById('formatBreakdown').innerHTML = `
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="smartphone" class="w-3.5 h-3.5 text-pink-500"></i> Вертикальные (9:16)</span>
-                    <span class="font-bold dark:text-white text-slate-900">${verticalCount}</span>
-                </div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="monitor" class="w-3.5 h-3.5 text-purple-500"></i> Горизонтальные (16:9)</span>
-                    <span class="font-bold dark:text-white text-slate-900">${horizontalCount}</span>
-                </div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="video" class="w-3.5 h-3.5 text-blue-500"></i> Всего Видео</span>
-                    <span class="font-bold dark:text-white text-slate-900">${videoCount}</span>
-                </div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="image" class="w-3.5 h-3.5 text-emerald-500"></i> Статичные макеты</span>
-                    <span class="font-bold dark:text-white text-slate-900">${staticCount}</span>
-                </div>
-            `;
-
-            const nicheCounts = {};
-            window.categories.forEach(cat => nicheCounts[cat] = 0);
-            window.creatives.forEach(c => {
-                if (nicheCounts[c.category] !== undefined) nicheCounts[c.category]++;
-                else nicheCounts[c.category] = 1;
+                grid.appendChild(card);
             });
-
-            document.getElementById('nicheBreakdownList').innerHTML = Object.entries(nicheCounts).map(([cat, cnt]) => {
-                const pct = total > 0 ? Math.round((cnt / total) * 100) : 0;
-                return `
-                    <div class="space-y-1">
-                        <div class="flex justify-between text-xs">
-                            <span class="dark:text-slate-300 text-slate-800 font-medium">${escapeHtml(cat)}</span>
-                            <span class="text-slate-400">${cnt} креатив(ов) (${pct}%)</span>
-                        </div>
-                        <div class="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden">
-                            <div class="bg-blue-500 h-full rounded-full" style="width: ${pct}%"></div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        function updateCounts() {
-            document.getElementById('cntAll').textContent = window.creatives.length;
-            document.getElementById('cntFree').textContent = window.creatives.filter(c => c.funnel === 'free').length;
-            document.getElementById('cntPaid').textContent = window.creatives.filter(c => c.funnel === 'paid').length;
-        }
+        document.getElementById('media-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('file-title').value;
+            const type = document.getElementById('file-type').value;
+            const folder = document.getElementById('file-folder').value;
+            const url = document.getElementById('file-url').value;
+            const transcription = document.getElementById('file-transcription').value;
+
+            try {
+                await window.addDoc(window.collection(window.db, "mediaItems"), {
+                    title,
+                    type,
+                    folder,
+                    url,
+                    transcription,
+                    createdAt: new Date()
+                });
+                document.getElementById('media-form').reset();
+            } catch (err) {
+                alert("Ошибка сохранения: " + err.message);
+            }
+        });
+
+        window.changeItemFolder = async function(id) {
+            const newFolder = document.getElementById(`folder-select-${id}`).value;
+            try {
+                await window.updateDoc(window.doc(window.db, "mediaItems", id), {
+                    folder: newFolder
+                });
+            } catch (err) {
+                alert("Ошибка изменения папки: " + err.message);
+            }
+        };
+
+        window.updateFileMeta = async function(id) {
+            const newFolder = document.getElementById(`folder-select-${id}`).value;
+            const newType = document.getElementById(`type-select-${id}`).value;
+            try {
+                await window.updateDoc(window.doc(window.db, "mediaItems", id), {
+                    folder: newFolder,
+                    type: newType
+                });
+            } catch (err) {
+                alert("Ошибка обновления параметров: " + err.message);
+            }
+        };
+
+        window.saveFileUrl = async function(id) {
+            const newUrl = document.getElementById(`url-${id}`).value.trim();
+            if (!newUrl) return;
+            try {
+                await window.updateDoc(window.doc(window.db, "mediaItems", id), {
+                    url: newUrl
+                });
+                alert("Ссылка на файл успешно обновлена!");
+            } catch (err) {
+                alert("Ошибка обновления ссылки: " + err.message);
+            }
+        };
+
+        window.saveTranscription = async function(id) {
+            const text = document.getElementById(`trans-${id}`).value;
+            try {
+                await window.updateDoc(window.doc(window.db, "mediaItems", id), {
+                    transcription: text
+                });
+                alert("Транскрибация сохранена!");
+            } catch (err) {
+                alert("Ошибка: " + err.message);
+            }
+        };
+
+        window.saveTitle = async function(id) {
+            const title = document.getElementById(`title-${id}`).value;
+            try {
+                await window.updateDoc(window.doc(window.db, "mediaItems", id), {
+                    title: title
+                });
+                alert("Название сохранено!");
+            } catch (err) {
+                alert("Ошибка: " + err.message);
+            }
+        };
+
+        window.copyTranscription = function(id) {
+            const textarea = document.getElementById(`trans-${id}`);
+            textarea.select();
+            document.execCommand('copy');
+            alert("Транскрибация скопирована!");
+        };
+
+        window.deleteItem = async function(id) {
+            if (confirm("Удалить эту запись?")) {
+                try {
+                    await window.deleteDoc(window.doc(window.db, "mediaItems", id));
+                } catch (err) {
+                    alert("Ошибка: " + err.message);
+                }
+            }
+        };
 
         function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
         }
-
-        function escapeJsString(str) {
-            if (!str) return '';
-            return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
-        }
-
-        window.copyText = function(btnEl, text) {
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text);
-            } else {
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                textArea.style.position = "fixed";
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-            }
-            showToast("Скопировано!");
-        };
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            if (!toast) return;
-            document.getElementById('toastMsg').textContent = msg;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 2500);
-        }
-
-        window.editCreative = function(id) {
-            const item = window.creatives.find(c => c.id === id);
-            if (!item) return;
-
-            populateFormCategories();
-
-            document.getElementById('modalTitle').textContent = 'Редактировать креатив';
-            document.getElementById('formEditingId').value = item.id;
-            document.getElementById('formTitle').value = item.title || '';
-            document.getElementById('formFunnel').value = item.funnel || 'free';
-            document.getElementById('formFormat').value = item.format || 'video';
-            document.getElementById('formOrientation').value = item.orientation || 'vertical';
-            document.getElementById('formCategory').value = item.category || window.categories[0];
-            
-            uploadedMediaData = item.mediaUrl || null;
-            uploadedPosterData = item.posterUrl || null;
-
-            document.getElementById('formMediaUrl').value = item.mediaUrl || '';
-            document.getElementById('formPosterUrl').value = item.posterUrl || '';
-            document.getElementById('formTranscription').value = item.transcription || '';
-
-            const addModal = document.getElementById('addModal');
-            addModal.classList.remove('hidden');
-            setTimeout(() => addModal.classList.remove('opacity-0'), 10);
-        };
-
-        window.promptDeleteCreative = function(id) {
-            window.creativeToDeleteId = id;
-            const modal = document.getElementById('deleteModal');
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
-        };
-
-        function renderNicheManagementList() {
-            const list = document.getElementById('nicheList');
-            if (!list) return;
-            list.innerHTML = window.categories.map((cat, idx) => `
-                <div class="flex items-center justify-between bg-slate-900 px-3 py-2 rounded-xl border border-slate-800">
-                    <span class="dark:text-slate-200 text-slate-800">${escapeHtml(cat)}</span>
-                    <button onclick="removeNiche(${idx})" class="text-slate-400 hover:text-rose-500 transition-colors p-1" title="Удалить нишу">
-                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                    </button>
-                </div>
-            `).join('');
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-
-        window.removeNiche = function(index) {
-            if (window.categories.length <= 1) {
-                showToast('Должна остаться хотя бы одна ниша!');
-                return;
-            }
-            const removed = window.categories.splice(index, 1)[0];
-            if (window.activeCategory === removed) window.activeCategory = 'all';
-            window.saveData();
-            renderCategoryPills();
-            populateFormCategories();
-            renderNicheManagementList();
-            renderCreatives();
-            showToast(`Ниша "${removed}" удалена`);
-        };
-
-        function setupMediaInputSwitchers() {
-            const mediaTypeUrlBtn = document.getElementById('mediaTypeUrlBtn');
-            const mediaTypeFileBtn = document.getElementById('mediaTypeFileBtn');
-            const mediaUrlBox = document.getElementById('mediaUrlBox');
-            const mediaFileBox = document.getElementById('mediaFileBox');
-
-            mediaTypeUrlBtn.addEventListener('click', () => {
-                mediaTypeUrlBtn.className = "px-2 py-0.5 rounded bg-blue-600 text-white font-medium";
-                mediaTypeFileBtn.className = "px-2 py-0.5 rounded text-slate-400 hover:text-white font-medium";
-                mediaUrlBox.classList.remove('hidden');
-                mediaFileBox.classList.add('hidden');
-            });
-
-            mediaTypeFileBtn.addEventListener('click', () => {
-                mediaTypeFileBtn.className = "px-2 py-0.5 rounded bg-blue-600 text-white font-medium";
-                mediaTypeUrlBtn.className = "px-2 py-0.5 rounded text-slate-400 hover:text-white font-medium";
-                mediaFileBox.classList.remove('hidden');
-                mediaUrlBox.classList.add('hidden');
-            });
-
-            const posterTypeUrlBtn = document.getElementById('posterTypeUrlBtn');
-            const posterTypeFileBtn = document.getElementById('posterTypeFileBtn');
-            const posterUrlBox = document.getElementById('posterUrlBox');
-            const posterFileBox = document.getElementById('posterFileBox');
-
-            posterTypeUrlBtn.addEventListener('click', () => {
-                posterTypeUrlBtn.className = "px-2 py-0.5 rounded bg-blue-600 text-white font-medium";
-                posterTypeFileBtn.className = "px-2 py-0.5 rounded text-slate-400 hover:text-white font-medium";
-                posterUrlBox.classList.remove('hidden');
-                posterFileBox.classList.add('hidden');
-            });
-
-            posterTypeFileBtn.addEventListener('click', () => {
-                posterTypeFileBtn.className = "px-2 py-0.5 rounded bg-blue-600 text-white font-medium";
-                posterTypeUrlBtn.className = "px-2 py-0.5 rounded text-slate-400 hover:text-white font-medium";
-                posterFileBox.classList.remove('hidden');
-                posterUrlBox.classList.add('hidden');
-            });
-
-            const formMediaFile = document.getElementById('formMediaFile');
-            const mediaFileName = document.getElementById('mediaFileName');
-            formMediaFile.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    mediaFileName.textContent = `Выбран: ${file.name}`;
-                    
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        let res = event.target.result;
-                        if (res.startsWith('data:application/octet-stream') || res.startsWith('data:video/x-matroska')) {
-                            res = res.replace(/^data:[^;]+;/, 'data:video/mp4;');
-                        }
-                        uploadedMediaData = res;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            const formPosterFile = document.getElementById('formPosterFile');
-            const posterFileName = document.getElementById('posterFileName');
-            formPosterFile.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    posterFileName.textContent = `Выбран: ${file.name}`;
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        uploadedPosterData = event.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            setupMediaInputSwitchers();
-
-            await initFirebaseCloud();
-
-            const viewLibraryBtn = document.getElementById('viewLibraryBtn');
-            const viewAnalyticsBtn = document.getElementById('viewAnalyticsBtn');
-            const librarySection = document.getElementById('librarySection');
-            const analyticsSection = document.getElementById('analyticsSection');
-
-            viewLibraryBtn.addEventListener('click', () => {
-                window.currentView = 'library';
-                librarySection.classList.remove('hidden');
-                analyticsSection.classList.add('hidden');
-                viewLibraryBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 bg-blue-600 text-white transition-all shadow";
-                viewAnalyticsBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white flex items-center gap-2 transition-all";
-            });
-
-            viewAnalyticsBtn.addEventListener('click', () => {
-                window.currentView = 'analytics';
-                librarySection.classList.add('hidden');
-                analyticsSection.classList.remove('hidden');
-                viewAnalyticsBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 bg-blue-600 text-white transition-all shadow";
-                viewLibraryBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white flex items-center gap-2 transition-all";
-                renderAnalytics();
-            });
-
-            document.getElementById('saveAndShareBtn').addEventListener('click', async () => {
-                const success = await window.saveData();
-                if (success || !isCloudActive) {
-                    showToast("Сохранено в Облако! Все увидят обновления.");
-                } else {
-                    showToast("Ошибка сохранения в облако!");
-                }
-            });
-
-            document.getElementById('copySiteUrlBtn').addEventListener('click', () => {
-                const cleanUrl = window.location.origin + window.location.pathname;
-                window.copyText(document.getElementById('copySiteUrlBtn'), cleanUrl);
-                showToast("Ссылка на сайт скопирована! Скидывай кенту.");
-            });
-
-            const funnelTabs = document.getElementById('funnelTabs');
-            funnelTabs.addEventListener('click', (e) => {
-                const btn = e.target.closest('.tab-btn');
-                if (!btn) return;
-                const funnel = btn.dataset.funnel;
-                window.activeFunnel = funnel;
-                funnelTabs.querySelectorAll('.tab-btn').forEach(b => {
-                    if (b.dataset.funnel === funnel) {
-                        b.className = "tab-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all bg-blue-600 text-white shadow-md";
-                    } else {
-                        b.className = "tab-btn px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap text-slate-400 hover:text-slate-200 transition-all";
-                    }
-                });
-                renderCreatives();
-            });
-
-            const searchInput = document.getElementById('searchInput');
-            const clearSearchBtn = document.getElementById('clearSearchBtn');
-            searchInput.addEventListener('input', (e) => {
-                window.searchQuery = e.target.value;
-                if (window.searchQuery.length > 0) clearSearchBtn.classList.remove('hidden');
-                else clearSearchBtn.classList.add('hidden');
-                renderCreatives();
-            });
-
-            clearSearchBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                window.searchQuery = '';
-                clearSearchBtn.classList.add('hidden');
-                renderCreatives();
-            });
-
-            const nichePillContainer = document.getElementById('nichePillContainer');
-            nichePillContainer.addEventListener('click', (e) => {
-                const pill = e.target.closest('.niche-pill');
-                if (!pill) return;
-                window.activeCategory = pill.dataset.cat;
-                renderCategoryPills();
-                renderCreatives();
-            });
-
-            document.getElementById('resetFiltersBtn').addEventListener('click', () => {
-                window.activeFunnel = 'all';
-                window.activeCategory = 'all';
-                window.searchQuery = '';
-                searchInput.value = '';
-                clearSearchBtn.classList.add('hidden');
-                renderCategoryPills();
-                renderCreatives();
-            });
-
-            document.getElementById('themeToggleBtn').addEventListener('click', () => {
-                document.documentElement.classList.toggle('dark');
-            });
-
-            const addModal = document.getElementById('addModal');
-            const addCreativeBtn = document.getElementById('addCreativeBtn');
-            const closeModalBtn = document.getElementById('closeModalBtn');
-            const cancelModalBtn = document.getElementById('cancelModalBtn');
-            const addCreativeForm = document.getElementById('addCreativeForm');
-
-            function openAddModal() {
-                populateFormCategories();
-                document.getElementById('modalTitle').textContent = 'Добавить креатив';
-                document.getElementById('formEditingId').value = '';
-                addCreativeForm.reset();
-                uploadedMediaData = null;
-                uploadedPosterData = null;
-                addModal.classList.remove('hidden');
-                setTimeout(() => addModal.classList.remove('opacity-0'), 10);
-            }
-
-            function closeAddModal() {
-                addModal.classList.add('opacity-0');
-                setTimeout(() => {
-                    addModal.classList.add('hidden');
-                    addCreativeForm.reset();
-                    document.getElementById('formEditingId').value = '';
-                    uploadedMediaData = null;
-                    uploadedPosterData = null;
-                }, 200);
-            }
-
-            addCreativeBtn.addEventListener('click', openAddModal);
-            closeModalBtn.addEventListener('click', closeModalBtn);
-            cancelModalBtn.addEventListener('click', closeAddModal);
-
-            addCreativeForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                let categoryVal = document.getElementById('formCategory').value;
-                if (categoryVal === '__NEW_NICHE__') {
-                    const quickVal = document.getElementById('quickNicheInput').value.trim();
-                    if (quickVal) {
-                        if (!window.categories.includes(quickVal)) window.categories.push(quickVal);
-                        categoryVal = quickVal;
-                    } else {
-                        categoryVal = window.categories[0] || 'Общая';
-                    }
-                }
-
-                const editingId = document.getElementById('formEditingId').value;
-                const titleVal = document.getElementById('formTitle').value;
-                const funnelVal = document.getElementById('formFunnel').value;
-                const formatVal = document.getElementById('formFormat').value;
-                const orientationVal = document.getElementById('formOrientation').value;
-                
-                const isMediaFileMode = !document.getElementById('mediaFileBox').classList.contains('hidden');
-                const mediaUrlVal = isMediaFileMode ? uploadedMediaData : document.getElementById('formMediaUrl').value;
-
-                const isPosterFileMode = !document.getElementById('posterFileBox').classList.contains('hidden');
-                const posterUrlVal = isPosterFileMode ? uploadedPosterData : document.getElementById('formPosterUrl').value;
-
-                const transcriptionVal = document.getElementById('formTranscription').value;
-
-                if (editingId) {
-                    const idx = window.creatives.findIndex(c => c.id === editingId);
-                    if (idx !== -1) {
-                        window.creatives[idx] = {
-                            ...window.creatives[idx],
-                            title: titleVal,
-                            funnel: funnelVal,
-                            format: formatVal,
-                            orientation: orientationVal,
-                            category: categoryVal,
-                            mediaUrl: mediaUrlVal || window.creatives[idx].mediaUrl,
-                            posterUrl: posterUrlVal || window.creatives[idx].posterUrl,
-                            transcription: transcriptionVal
-                        };
-                    }
-                    showToast("Креатив обновлен!");
-                } else {
-                    const newCreative = {
-                        id: 'c-' + Date.now().toString() + '-' + Math.random().toString(36).substr(2, 5),
-                        title: titleVal,
-                        funnel: funnelVal,
-                        format: formatVal,
-                        orientation: orientationVal,
-                        category: categoryVal,
-                        mediaUrl: mediaUrlVal,
-                        posterUrl: posterUrlVal,
-                        views: 'Новый',
-                        transcription: transcriptionVal
-                    };
-                    window.creatives.unshift(newCreative);
-                    showToast("Креатив успешно добавлен!");
-                }
-
-                window.saveData();
-                renderCreatives();
-                updateCounts();
-                closeAddModal();
-            });
-
-            document.getElementById('formCategory').addEventListener('change', (e) => {
-                const container = document.getElementById('quickAddNicheContainer');
-                if (e.target.value === '__NEW_NICHE__') {
-                    container.classList.remove('hidden');
-                    document.getElementById('quickNicheInput').focus();
-                } else {
-                    container.classList.add('hidden');
-                }
-            });
-
-            document.getElementById('quickNicheSaveBtn').addEventListener('click', () => {
-                const val = document.getElementById('quickNicheInput').value.trim();
-                if (!val) return;
-                if (!window.categories.includes(val)) {
-                    window.categories.push(val);
-                    window.saveData();
-                    renderCategoryPills();
-                    populateFormCategories();
-                    document.getElementById('formCategory').value = val;
-                    showToast(`Ниша "${val}" создана!`);
-                } else {
-                    document.getElementById('formCategory').value = val;
-                }
-                document.getElementById('quickNicheInput').value = '';
-                document.getElementById('quickAddNicheContainer').classList.add('hidden');
-            });
-
-            const nicheModal = document.getElementById('nicheModal');
-            const addNicheBtn = document.getElementById('addNicheBtn');
-            const closeNicheModalBtn = document.getElementById('closeNicheModalBtn');
-
-            function openNicheModal() {
-                renderNicheManagementList();
-                nicheModal.classList.remove('hidden');
-                setTimeout(() => nicheModal.classList.remove('opacity-0'), 10);
-            }
-
-            function closeNicheModal() {
-                nicheModal.classList.add('opacity-0');
-                setTimeout(() => {
-                    nicheModal.classList.add('hidden');
-                    document.getElementById('newNicheInput').value = '';
-                }, 200);
-            }
-
-            addNicheBtn.addEventListener('click', openNicheModal);
-            closeNicheModalBtn.addEventListener('click', closeNicheModal);
-
-            document.getElementById('saveNewNicheBtn').addEventListener('click', () => {
-                const input = document.getElementById('newNicheInput');
-                const val = input.value.trim();
-                if (!val) return;
-                if (window.categories.includes(val)) {
-                    showToast('Такая ниша уже существует!');
-                    return;
-                }
-                window.categories.push(val);
-                window.saveData();
-                renderCategoryPills();
-                populateFormCategories();
-                renderNicheManagementList();
-                input.value = '';
-                showToast(`Ниша "${val}" добавлена!`);
-            });
-
-            const deleteModal = document.getElementById('deleteModal');
-            const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-
-            function closeDeleteModal() {
-                deleteModal.classList.add('opacity-0');
-                setTimeout(() => {
-                    deleteModal.classList.add('hidden');
-                    window.creativeToDeleteId = null;
-                }, 200);
-            }
-
-            cancelDeleteBtn.addEventListener('click', closeDeleteModal);
-            confirmDeleteBtn.addEventListener('click', () => {
-                if (window.creativeToDeleteId) {
-                    window.creatives = window.creatives.filter(c => c.id !== window.creativeToDeleteId);
-                    window.saveData();
-                    renderCreatives();
-                    updateCounts();
-                    closeDeleteModal();
-                    showToast("Креатив удален");
-                }
-            });
-
-            window.renderApp();
-        });
     </script>
 </body>
 </html>
