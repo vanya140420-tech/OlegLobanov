@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>Медиа Хаб & Транскрибация 24/7</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
@@ -59,7 +59,6 @@
                 <button onclick="filterFolder('all')" class="folder-btn px-4 py-2 rounded-xl text-xs font-medium bg-indigo-600 text-white transition">
                     📂 Все файлы
                 </button>
-                <!-- Динамические папки -->
             </div>
             <div class="flex gap-2">
                 <input type="text" id="new-folder-name" placeholder="Имя новой папки..." 
@@ -70,11 +69,28 @@
             </div>
         </div>
 
+        <!-- Переключатель категорий: Платные / Бесплатные и Сортировка -->
+        <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4 shadow-md">
+            <div class="flex items-center gap-2" id="tier-filter-buttons">
+                <button onclick="filterTier('all')" class="tier-btn px-4 py-2 rounded-xl text-xs font-medium bg-indigo-600 text-white transition">Все типы доступа</button>
+                <button onclick="filterTier('free')" class="tier-btn px-4 py-2 rounded-xl text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">🟢 Бесплатные</button>
+                <button onclick="filterTier('paid')" class="tier-btn px-4 py-2 rounded-xl text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">💎 Платные</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <label class="text-xs text-slate-400">Сортировка:</label>
+                <select id="sort-select" onchange="changeSort()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    <option value="new">Сначала новые</option>
+                    <option value="old">Сначала старые</option>
+                    <option value="title">По названию (А-Я)</option>
+                </select>
+            </div>
+        </div>
+
         <!-- Форма добавления -->
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-10 shadow-xl">
             <h2 class="text-lg font-semibold mb-4 text-white">Добавить видео или фото</h2>
             <form id="media-form" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-1">Название файла</label>
                         <input type="text" id="file-title" required placeholder="Например: Выпуск 1" 
@@ -83,7 +99,7 @@
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-1">Тип медиа</label>
                         <select id="file-type" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
-                            <option value="video">Видео (любой размер, формат 9:16, 16:9 и др.)</option>
+                            <option value="video">Видео</option>
                             <option value="image">Фото / Картинка</option>
                         </select>
                     </div>
@@ -93,9 +109,16 @@
                             <option value="Общие">Общие</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Доступ</label>
+                        <select id="file-tier" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                            <option value="free">Бесплатный</option>
+                            <option value="paid">Платный</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">Ссылка на файл (Google Диск или прямая URL-ссылка)</label>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Ссылка на файл</label>
                     <input type="url" id="file-url" required placeholder="https://drive.google.com/file/d/ВАШ_ID/view" 
                         class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                 </div>
@@ -125,6 +148,8 @@
 
     <script>
         let currentFolderFilter = 'all';
+        let currentTierFilter = 'all';
+        let currentSort = 'new';
         let cachedItems = [];
         let foldersList = ['Общие'];
 
@@ -169,7 +194,6 @@
             const filterContainer = document.getElementById('folders-filter');
             const selectContainer = document.getElementById('file-folder');
             
-            // Сохраняем текущий выбор в селекте формы
             const selectedVal = selectContainer.value;
             selectContainer.innerHTML = '';
             
@@ -216,8 +240,23 @@
             renderMediaGrid();
         };
 
+        window.filterTier = function(tier) {
+            currentTierFilter = tier;
+            const buttons = document.querySelectorAll('#tier-filter-buttons button');
+            buttons.forEach(btn => {
+                btn.className = "tier-btn px-4 py-2 rounded-xl text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+            });
+            event.target.className = "tier-btn px-4 py-2 rounded-xl text-xs font-medium bg-indigo-600 text-white transition";
+            renderMediaGrid();
+        };
+
+        window.changeSort = function() {
+            currentSort = document.getElementById('sort-select').value;
+            renderMediaGrid();
+        };
+
         function loadMediaItems() {
-            const q = window.query(window.collection(window.db, "mediaItems"), window.orderBy("createdAt", "desc"));
+            const q = window.query(window.collection(window.db, "mediaItems"));
             
             window.onSnapshot(q, (snapshot) => {
                 cachedItems = [];
@@ -233,18 +272,35 @@
             const countEl = document.getElementById('files-count');
             grid.innerHTML = '';
 
-            const filtered = cachedItems.filter(item => {
-                if (currentFolderFilter === 'all') return true;
-                return (item.folder || 'Общие') === currentFolderFilter;
+            // Фильтрация по папке
+            let filtered = cachedItems.filter(item => {
+                if (currentFolderFilter !== 'all' && (item.folder || 'Общие') !== currentFolderFilter) {
+                    return false;
+                }
+                // Фильтрация по платным/бесплатным
+                if (currentTierFilter !== 'all' && (item.tier || 'free') !== currentTierFilter) {
+                    return false;
+                }
+                return true;
             });
             
-            countEl.textContent = `Файлов в предпросмотре: ${filtered.length}`;
+            // Сортировка
+            filtered.sort((a, b) => {
+                const timeA = a.createdAt?.toDate?.()?.getTime() || 0;
+                const timeB = b.createdAt?.toDate?.()?.getTime() || 0;
+                if (currentSort === 'new') return timeB - timeA;
+                if (currentSort === 'old') return timeA - timeB;
+                if (currentSort === 'title') return (a.title || '').localeCompare(b.title || '');
+                return 0;
+            });
+
+            countEl.textContent = `Найдено файлов: ${filtered.length}`;
 
             if (filtered.length === 0) {
                 grid.innerHTML = `
                     <div class="text-center py-16 text-slate-500 col-span-full bg-slate-900/50 rounded-2xl border border-slate-800">
-                        <p class="text-base font-medium">В этой папке пока нет файлов.</p>
-                        <p class="text-sm mt-1">Добавьте новый файл или переключите папку!</p>
+                        <p class="text-base font-medium">В этой категории пока нет файлов.</p>
+                        <p class="text-sm mt-1">Измените фильтр папки или категории доступов!</p>
                     </div>
                 `;
                 return;
@@ -255,6 +311,7 @@
                 const directUrl = formatMediaUrl(data.url, data.type);
                 const fileFolder = data.folder || 'Общие';
                 const fileType = data.type || 'video';
+                const fileTier = data.tier || 'free';
 
                 const card = document.createElement('div');
                 card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between";
@@ -294,8 +351,8 @@
                                 </button>
                             </div>
 
-                            <!-- Блок редактирования папки и типа файла -->
-                            <div class="grid grid-cols-2 gap-2 mb-3">
+                            <!-- Редактирование параметров: Папка, Тип, Доступ -->
+                            <div class="grid grid-cols-3 gap-2 mb-3">
                                 <div>
                                     <label class="text-[10px] text-slate-400 block mb-0.5">Папка:</label>
                                     <select id="folder-select-${id}" onchange="updateFileMeta('${id}')" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-indigo-300 focus:outline-none">
@@ -309,9 +366,16 @@
                                         <option value="image" ${fileType === 'image' ? 'selected' : ''}>Фото</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label class="text-[10px] text-slate-400 block mb-0.5">Доступ:</label>
+                                    <select id="tier-select-${id}" onchange="updateFileMeta('${id}')" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-indigo-300 focus:outline-none">
+                                        <option value="free" ${fileTier === 'free' ? 'selected' : ''}>🟢 Бесплатно</option>
+                                        <option value="paid" ${fileTier === 'paid' ? 'selected' : ''}>💎 Платный</option>
+                                    </select>
+                                </div>
                             </div>
 
-                            <!-- Блок редактирования URL -->
+                            <!-- Редактирование URL -->
                             <div class="mb-3">
                                 <label class="text-[10px] text-slate-400 block mb-0.5">Ссылка на файл:</label>
                                 <div class="flex gap-1">
@@ -348,6 +412,7 @@
             const title = document.getElementById('file-title').value;
             const type = document.getElementById('file-type').value;
             const folder = document.getElementById('file-folder').value;
+            const tier = document.getElementById('file-tier').value;
             const url = document.getElementById('file-url').value;
             const transcription = document.getElementById('file-transcription').value;
 
@@ -356,6 +421,7 @@
                     title,
                     type,
                     folder,
+                    tier,
                     url,
                     transcription,
                     createdAt: new Date()
@@ -366,24 +432,15 @@
             }
         });
 
-        window.changeItemFolder = async function(id) {
-            const newFolder = document.getElementById(`folder-select-${id}`).value;
-            try {
-                await window.updateDoc(window.doc(window.db, "mediaItems", id), {
-                    folder: newFolder
-                });
-            } catch (err) {
-                alert("Ошибка изменения папки: " + err.message);
-            }
-        };
-
         window.updateFileMeta = async function(id) {
             const newFolder = document.getElementById(`folder-select-${id}`).value;
             const newType = document.getElementById(`type-select-${id}`).value;
+            const newTier = document.getElementById(`tier-select-${id}`).value;
             try {
                 await window.updateDoc(window.doc(window.db, "mediaItems", id), {
                     folder: newFolder,
-                    type: newType
+                    type: newType,
+                    tier: newTier
                 });
             } catch (err) {
                 alert("Ошибка обновления параметров: " + err.message);
