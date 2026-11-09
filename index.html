@@ -168,7 +168,6 @@
                 if (match && match[1]) {
                     const fileId = match[1];
                     if (type === 'video') {
-                        // Возвращаем ссылку для встроенного плеера Google Диска (iframe)
                         return `https://drive.google.com/file/d/${fileId}/preview`;
                     } else {
                         return `https://lh3.googleusercontent.com/d/${fileId}`;
@@ -190,14 +189,24 @@
 
         function loadFolders() {
             window.onSnapshot(window.collection(window.db, "folders"), (snapshot) => {
-                foldersList = ['Общие'];
+                const dynamicFolders = ['Общие'];
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
-                    if (data.name && !foldersList.includes(data.name)) {
-                        foldersList.push(data.name);
+                    if (data.name && !dynamicFolders.includes(data.name)) {
+                        dynamicFolders.push(data.name);
                     }
                 });
+                // Также проверяем папки из уже существующих файлов, чтобы они не терялись
+                cachedItems.forEach(item => {
+                    const f = item.folder || 'Общие';
+                    if (!dynamicFolders.includes(f)) {
+                        dynamicFolders.push(f);
+                    }
+                });
+                foldersList = dynamicFolders;
                 renderFoldersUI();
+                // Обновляем селекторы в существующих карточках
+                renderMediaGrid();
             });
         }
 
@@ -205,23 +214,25 @@
             const filterContainer = document.getElementById('folders-filter');
             const selectContainer = document.getElementById('file-folder');
             
-            const selectedVal = selectContainer.value;
-            selectContainer.innerHTML = '';
+            const selectedVal = selectContainer ? selectContainer.value : 'Общие';
+            if (selectContainer) selectContainer.innerHTML = '';
             
             let filterHtml = `<button onclick="filterFolder('all')" class="folder-btn px-4 py-2 rounded-xl text-xs font-medium ${currentFolderFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'} transition">📂 Все файлы</button>`;
             
             foldersList.forEach(folder => {
                 const isSelected = currentFolderFilter === folder;
-                filterHtml += `<button onclick="filterFolder('${folder}')" class="folder-btn px-4 py-2 rounded-xl text-xs font-medium ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'} transition">📁 ${folder}</button>`;
+                filterHtml += `<button onclick="filterFolder('${escapeHtml(folder)}')" class="folder-btn px-4 py-2 rounded-xl text-xs font-medium ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'} transition">📁 ${escapeHtml(folder)}</button>`;
                 
-                const opt = document.createElement('option');
-                opt.value = folder;
-                opt.textContent = folder;
-                selectContainer.appendChild(opt);
+                if (selectContainer) {
+                    const opt = document.createElement('option');
+                    opt.value = folder;
+                    opt.textContent = folder;
+                    selectContainer.appendChild(opt);
+                }
             });
             
             filterContainer.innerHTML = filterHtml;
-            if (foldersList.includes(selectedVal)) {
+            if (selectContainer && foldersList.includes(selectedVal)) {
                 selectContainer.value = selectedVal;
             }
         }
@@ -239,10 +250,10 @@
             try {
                 await window.addDoc(window.collection(window.db, "folders"), { name });
                 nameInput.value = '';
-                // Сразу добавляем в локальный список для мгновенного отображения
                 if (!foldersList.includes(name)) {
                     foldersList.push(name);
                     renderFoldersUI();
+                    renderMediaGrid();
                 }
             } catch (err) {
                 alert("Ошибка создания папки: " + err.message);
@@ -276,8 +287,15 @@
             window.onSnapshot(q, (snapshot) => {
                 cachedItems = [];
                 snapshot.forEach((docSnap) => {
-                    cachedItems.push({ id: docSnap.id, ...docSnap.data() });
+                    const data = docSnap.data();
+                    cachedItems.push({ id: docSnap.id, ...data });
+                    // Добавляем папку в список, если её там еще нет
+                    const f = data.folder || 'Общие';
+                    if (!foldersList.includes(f)) {
+                        foldersList.push(f);
+                    }
                 });
+                renderFoldersUI();
                 renderMediaGrid();
             });
         }
@@ -285,21 +303,21 @@
         function renderMediaGrid() {
             const grid = document.getElementById('media-grid');
             const countEl = document.getElementById('files-count');
+            if (!grid) return;
             grid.innerHTML = '';
 
-            // Фильтрация по папке
             let filtered = cachedItems.filter(item => {
-                if (currentFolderFilter !== 'all' && (item.folder || 'Общие') !== currentFolderFilter) {
+                const itemFolder = item.folder || 'Общие';
+                if (currentFolderFilter !== 'all' && itemFolder !== currentFolderFilter) {
                     return false;
                 }
-                // Фильтрация по платным/бесплатным
-                if (currentTierFilter !== 'all' && (item.tier || 'free') !== currentTierFilter) {
+                const itemTier = item.tier || 'free';
+                if (currentTierFilter !== 'all' && itemTier !== currentTierFilter) {
                     return false;
                 }
                 return true;
             });
             
-            // Сортировка
             filtered.sort((a, b) => {
                 const timeA = a.createdAt?.toDate?.()?.getTime() || 0;
                 const timeB = b.createdAt?.toDate?.()?.getTime() || 0;
@@ -309,7 +327,7 @@
                 return 0;
             });
 
-            countEl.textContent = `Найдено файлов: ${filtered.length}`;
+            if (countEl) countEl.textContent = `Найдено файлов: ${filtered.length}`;
 
             if (filtered.length === 0) {
                 grid.innerHTML = `
@@ -378,34 +396,36 @@
                             <div class="grid grid-cols-3 gap-2 mb-3">
                                 <div>
                                     <label class="text-[10px] text-slate-400 block mb-0.5">Папка:</label>
-                                    <select id="folder-select-${id}" onchange="updateFileMeta('${id}')" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-indigo-300 focus:outline-none">
+                                    <select id="folder-select-${id}" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-indigo-300 focus:outline-none">
                                         ${folderOptions}
                                     </select>
                                 </div>
                                 <div>
                                     <label class="text-[10px] text-slate-400 block mb-0.5">Тип:</label>
-                                    <select id="type-select-${id}" onchange="updateFileMeta('${id}')" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-indigo-300 focus:outline-none">
+                                    <select id="type-select-${id}" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-indigo-300 focus:outline-none">
                                         <option value="video" ${fileType === 'video' ? 'selected' : ''}>Видео</option>
                                         <option value="image" ${fileType === 'image' ? 'selected' : ''}>Фото</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label class="text-[10px] text-slate-400 block mb-0.5">Доступ:</label>
-                                    <select id="tier-select-${id}" onchange="updateFileMeta('${id}')" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-indigo-300 focus:outline-none">
+                                    <select id="tier-select-${id}" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-indigo-300 focus:outline-none">
                                         <option value="free" ${fileTier === 'free' ? 'selected' : ''}>🟢 Бесплатно</option>
                                         <option value="paid" ${fileTier === 'paid' ? 'selected' : ''}>💎 Платный</option>
                                     </select>
                                 </div>
                             </div>
 
-                            <!-- Редактирование URL -->
+                            <!-- Редактирование URL и сохранение метаданных -->
                             <div class="mb-3">
-                                <label class="text-[10px] text-slate-400 block mb-0.5">Ссылка на файл:</label>
-                                <div class="flex gap-1">
+                                <label class="text-[10px] text-slate-400 block mb-0.5">Ссылка на файл (Google Диск / Прямая):</label>
+                                <div class="flex gap-1 mb-2">
                                     <input type="url" value="${escapeHtml(data.url || '')}" id="url-${id}" 
                                         class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
-                                    <button onclick="saveFileUrl('${id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg text-xs shrink-0 transition">Изменить</button>
                                 </div>
+                                <button onclick="saveAllFileMeta('${id}')" class="w-full bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 py-1.5 rounded-lg text-xs font-medium transition">
+                                    💾 Сохранить изменения (Папку, Тип, Доступ, Ссылку)
+                                </button>
                             </div>
                             
                             <div class="mt-2">
@@ -455,31 +475,27 @@
             }
         });
 
-        window.updateFileMeta = async function(id) {
+        window.saveAllFileMeta = async function(id) {
             const newFolder = document.getElementById(`folder-select-${id}`).value;
             const newType = document.getElementById(`type-select-${id}`).value;
             const newTier = document.getElementById(`tier-select-${id}`).value;
+            const newUrl = document.getElementById(`url-${id}`).value.trim();
+
+            if (!newUrl) {
+                alert("Ссылка не может быть пустой!");
+                return;
+            }
+
             try {
                 await window.updateDoc(window.doc(window.db, "mediaItems", id), {
                     folder: newFolder,
                     type: newType,
-                    tier: newTier
-                });
-            } catch (err) {
-                alert("Ошибка обновления параметров: " + err.message);
-            }
-        };
-
-        window.saveFileUrl = async function(id) {
-            const newUrl = document.getElementById(`url-${id}`).value.trim();
-            if (!newUrl) return;
-            try {
-                await window.updateDoc(window.doc(window.db, "mediaItems", id), {
+                    tier: newTier,
                     url: newUrl
                 });
-                alert("Ссылка на файл успешно обновлена!");
+                alert("Папка и параметры файла успешно сохранены!");
             } catch (err) {
-                alert("Ошибка обновления ссылки: " + err.message);
+                alert("Ошибка обновления: " + err.message);
             }
         };
 
